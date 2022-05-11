@@ -46,8 +46,8 @@ run v s =
       putStrLn err
       exitFailure
     Right tree -> do
-      -- putStrLn "\nParse Successful!"
-      -- showTree v tree
+      putStrLn "\nParse Successful!"
+      showTree v tree
       -- typeCheck tree
       case (interpret tree) of
         Left err -> putStrLn $ showString "Runtime error: " err
@@ -79,4 +79,3 @@ main = do
     []         -> getContents >>= run 2
     "-s":fs    -> mapM_ (runFile 0) fs
     fs         -> mapM_ (runFile 2) fs
-

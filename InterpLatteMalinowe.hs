@@ -6,25 +6,42 @@
 
 module InterpLatteMalinowe where
 
-import Prelude (($), Either(..), String, (++), Show, show)
-import qualified AbsLatteMalinowe
+
+import Data.Map as Map
+import Control.Monad.Reader
+import Control.Monad.State
+import Prelude
+import AbsLatteMalinowe
+import UtilsLatteMalinowe
+
+type IdentEnv = Map.Map Ident Val
 
 type Err = Either String
-type Result = Err String
+type Result = Err (Maybe Val)
 
-interpret :: Show a => AbsLatteMalinowe.Program' a -> Either String String
+-- type ContexedExecutor = ReaderT Context
+
+-- zadanie 1
+-- z wykorzystaniem monady writer napisz program, który dla każdej topdef
+-- dopisuje "funkcja" jako kolejny element listy będącej środowiskiem
+-- a na koniec wypisuje środowisko skontatenowane znakiem nowej linii
+
+interpret :: Show a => Program' a -> Result
 interpret = transProgram
 
 failure :: Show a => a -> Result
 failure x = Left $ "Undefined case: " ++ show x
 
-transIdent :: AbsLatteMalinowe.Ident -> Result
-transIdent x = case x of
-  AbsLatteMalinowe.Ident string -> failure x
+-- transIdent :: AbsLatteMalinowe.Ident -> Result
+-- transIdent x = case x of
+--   AbsLatteMalinowe.Ident string -> failure x
 
-transProgram :: Show a => AbsLatteMalinowe.Program' a -> Result
+-- state powinien przechowywać dotychczasowe wyjście
+-- oraz mapę dotychczasowych deklaracji
+
+transProgram :: Show a => Program' a -> Result
 transProgram x = case x of
-  AbsLatteMalinowe.Program _ topdefs -> failure x
+  AbsLatteMalinowe.Program _ topdefs -> Right Nothing
 
 transTopDef :: Show a => AbsLatteMalinowe.TopDef' a -> Result
 transTopDef x = case x of
@@ -37,6 +54,35 @@ transArg x = case x of
 transBlock :: Show a => AbsLatteMalinowe.Block' a -> Result
 transBlock x = case x of
   AbsLatteMalinowe.Block _ stmts -> failure x
+
+execBlock :: Block' a -> IO ()
+execBlock b = print $ execState (execBlockM b) Map.empty
+
+--TODO może fold? a może własna monada do przetwarzania 1 by 1?
+execBlockM :: Block' a -> State IdentEnv ()
+execBlockM (Block addr stmts) = case stmts of 
+  [] -> return ()
+  s:ss -> do
+    execStmtM s
+    execBlockM (Block addr ss)
+
+execStmtM :: Stmt' a -> State IdentEnv ()
+execStmtM s = case s of
+  OrdStmt _ os -> case os of 
+    Decl _ type_ items -> declManyVarM type_ items
+    _ -> return ()
+  _ -> return ()
+
+declManyVarM :: Type' a -> [Item' a] -> State IdentEnv ()
+declManyVarM type_ items = case items of 
+  [] -> return ()
+  i:is -> do
+    declOneVarM type_ i
+    declManyVarM type_ is
+
+declOneVarM :: Type' a -> Item' a -> State IdentEnv ()
+declOneVarM type_ item =
+  modify $ Map.insert (identItem item) (valueItem type_ item)
 
 transStmt :: Show a => AbsLatteMalinowe.Stmt' a -> Result
 transStmt x = case x of
