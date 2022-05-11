@@ -4,44 +4,23 @@
 
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 
-module InterpLatteMalinowe where
-
+module Interpreter where
 
 import qualified Data.Map as Map
 import Control.Monad.Reader
 import Control.Monad.State
-import Prelude
+
+import Utils
+import Globals
+import Evaluator
 import AbsLatteMalinowe
-import UtilsLatteMalinowe
-
-type IdentEnv = Map.Map Ident Val
-
-type Err = Either String
-type Result = Err (Maybe Val)
-
--- type ContexedExecutor = ReaderT Context
-
--- zadanie 1
--- z wykorzystaniem monady writer napisz program, który dla każdej topdef
--- dopisuje "funkcja" jako kolejny element listy będącej środowiskiem
--- a na koniec wypisuje środowisko skontatenowane znakiem nowej linii
 
 interpret :: Show a => Program' a -> Result
 interpret = transProgram
 
-failure :: Show a => a -> Result
-failure x = Left $ "Undefined case: " ++ show x
-
--- transIdent :: AbsLatteMalinowe.Ident -> Result
--- transIdent x = case x of
---   AbsLatteMalinowe.Ident string -> failure x
-
--- state powinien przechowywać dotychczasowe wyjście
--- oraz mapę dotychczasowych deklaracji
-
 transProgram :: Show a => Program' a -> Result
 transProgram x = case x of
-  AbsLatteMalinowe.Program _ topdefs -> Right Nothing
+  AbsLatteMalinowe.Program _ topdefs -> Right VVoid
 
 transTopDef :: Show a => AbsLatteMalinowe.TopDef' a -> Result
 transTopDef x = case x of
@@ -73,7 +52,14 @@ declManyVarM type_ items = processSeq (declOneVarM type_) items
 
 declOneVarM :: Type' a -> Item' a -> State IdentEnv ()
 declOneVarM type_ item =
-  modify $ Map.insert (identItem item) (valueItem type_ item)
+  modify $ Map.insert ident value
+  where
+    ident = case item of
+      NoInit _ ident' -> ident'
+      Init _ ident' _ -> ident'
+    value = case item of
+      NoInit _ _ -> defaultVal type_
+      Init _ _ expr -> evalExpr expr
 
 transStmt :: Show a => AbsLatteMalinowe.Stmt' a -> Result
 transStmt x = case x of
@@ -121,38 +107,3 @@ transType x = case x of
   AbsLatteMalinowe.Bool _ -> failure x
   AbsLatteMalinowe.Void _ -> failure x
 
-transExpr :: Show a => AbsLatteMalinowe.Expr' a -> Result
-transExpr x = case x of
-  AbsLatteMalinowe.EVar _ ident -> failure x
-  AbsLatteMalinowe.ELitInt _ integer -> failure x
-  AbsLatteMalinowe.ELitTrue _ -> failure x
-  AbsLatteMalinowe.ELitFalse _ -> failure x
-  AbsLatteMalinowe.EApp _ ident exprs -> failure x
-  AbsLatteMalinowe.EString _ string -> failure x
-  AbsLatteMalinowe.Neg _ expr -> failure x
-  AbsLatteMalinowe.Not _ expr -> failure x
-  AbsLatteMalinowe.EMul _ expr1 mulop expr2 -> failure x
-  AbsLatteMalinowe.EAdd _ expr1 addop expr2 -> failure x
-  AbsLatteMalinowe.ERel _ expr1 relop expr2 -> failure x
-  AbsLatteMalinowe.EAnd _ expr1 expr2 -> failure x
-  AbsLatteMalinowe.EOr _ expr1 expr2 -> failure x
-
-transAddOp :: Show a => AbsLatteMalinowe.AddOp' a -> Result
-transAddOp x = case x of
-  AbsLatteMalinowe.Plus _ -> failure x
-  AbsLatteMalinowe.Minus _ -> failure x
-
-transMulOp :: Show a => AbsLatteMalinowe.MulOp' a -> Result
-transMulOp x = case x of
-  AbsLatteMalinowe.Times _ -> failure x
-  AbsLatteMalinowe.Div _ -> failure x
-  AbsLatteMalinowe.Mod _ -> failure x
-
-transRelOp :: Show a => AbsLatteMalinowe.RelOp' a -> Result
-transRelOp x = case x of
-  AbsLatteMalinowe.LTH _ -> failure x
-  AbsLatteMalinowe.LE _ -> failure x
-  AbsLatteMalinowe.GTH _ -> failure x
-  AbsLatteMalinowe.GE _ -> failure x
-  AbsLatteMalinowe.EQU _ -> failure x
-  AbsLatteMalinowe.NE _ -> failure x

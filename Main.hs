@@ -20,11 +20,11 @@ import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when, return )
 
-import AbsLatteMalinowe   ()
 import LexLatteMalinowe   ( Token, mkPosToken )
 import ParLatteMalinowe   ( pProgram, myLexer )
 import PrintLatteMalinowe ( Print, printTree )
-import InterpLatteMalinowe -- ( interpret )
+import Globals
+import Interpreter -- ( interpret )
 
 -- type Err        = Either String
 type ParseFun a = [Token] -> Err a

@@ -111,13 +111,6 @@ data RelOp' a = LTH a | LE a | GTH a | GE a | EQU a | NE a
 newtype Ident = Ident String
   deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
 
-data Val
-  = VInt  Integer
-  | VStr  String
-  | VBool Bool
-  deriving (C.Show)
-  -- todo funkcje jako val
-
 -- | Start position (line, column) of something.
 
 type BNFC'Position = C.Maybe (C.Int, C.Int)
