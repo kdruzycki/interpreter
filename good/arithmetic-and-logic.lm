@@ -1,0 +1,11 @@
+int main(){
+
+	//all stmts should print true
+	print(2 + 2 * 2 == 10 / 3 + 3); // aka 2 + 4 == 3 + 3
+	print((3 + 2) % 2 == (-2) / 4 - (-1)); // aka 5 % 2 == 0 - (-1)
+	print(!("a" > "a" + "bcd")); //aka !false
+	print("ab" <= "c" && "" == "" || !true); //aka true && true || false
+	print((false && (false || true)) != (false && false || true)); // aka false != true
+
+	return 0;
+}

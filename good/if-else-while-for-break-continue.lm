@@ -1,0 +1,24 @@
+void main () {
+
+  bool stop = false;
+  while (true) {
+    if (!stop) {
+      print("the first iteration...");
+      stop = true;
+    } else {
+      print("...and the second one");
+      break;
+    }
+  }
+
+  for (i from 1 to 10) {
+    if (i % 2) {
+      if (true) {
+        continue;
+      }
+    }
+    print(i);
+  }
+
+  return;
+}

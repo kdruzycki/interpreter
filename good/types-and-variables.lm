@@ -1,0 +1,19 @@
+int main() {
+
+	int n, m = 10;
+	bool a, b = false;
+	string s = "nope", s_2;
+
+	print(n);
+	print(m);
+	print(a);
+	print(b);
+	print(s);
+	print(s_2);
+
+	print(100);
+	print(true);
+	print("");
+
+	return 0;
+}

@@ -1,0 +1,31 @@
+void f() {
+	string x = "f()";
+	print(x);
+	return;
+}
+
+void main'(string x) {
+	print(x+"'");
+	return;
+}
+
+void g(string x) {
+	x = "g()";
+	return;
+}
+
+int main() {
+
+	string x = "main";
+	f();
+	print(x);
+	{
+		string x = "block in main";
+		print(x);
+	}
+	main'(x);
+	g(x);
+	print(x);
+
+	return 0;
+}
