@@ -7,7 +7,7 @@
 module InterpLatteMalinowe where
 
 
-import Data.Map as Map
+import qualified Data.Map as Map
 import Control.Monad.Reader
 import Control.Monad.State
 import Prelude
@@ -58,13 +58,8 @@ transBlock x = case x of
 execBlock :: Block' a -> IO ()
 execBlock b = print $ execState (execBlockM b) Map.empty
 
---TODO może fold? a może własna monada do przetwarzania 1 by 1?
 execBlockM :: Block' a -> State IdentEnv ()
-execBlockM (Block addr stmts) = case stmts of 
-  [] -> return ()
-  s:ss -> do
-    execStmtM s
-    execBlockM (Block addr ss)
+execBlockM (Block _ stmts) = processSeq execStmtM stmts
 
 execStmtM :: Stmt' a -> State IdentEnv ()
 execStmtM s = case s of
@@ -74,11 +69,7 @@ execStmtM s = case s of
   _ -> return ()
 
 declManyVarM :: Type' a -> [Item' a] -> State IdentEnv ()
-declManyVarM type_ items = case items of 
-  [] -> return ()
-  i:is -> do
-    declOneVarM type_ i
-    declManyVarM type_ is
+declManyVarM type_ items = processSeq (declOneVarM type_) items
 
 declOneVarM :: Type' a -> Item' a -> State IdentEnv ()
 declOneVarM type_ item =

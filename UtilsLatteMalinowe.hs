@@ -2,6 +2,9 @@ module UtilsLatteMalinowe where
 
 import AbsLatteMalinowe
 
+processSeq :: (Monoid b, Monad m) => (a -> m b) -> [a] -> m b
+processSeq f s = mconcat <$> mapM f s
+
 -- disclaimer nie trzeba sprawdzać typu zmiennej i wartości, bo typechecker
 valueItem :: Type' a -> Item' a -> Val
 valueItem t i = case i of
