@@ -21,41 +21,56 @@ evalExpr e = case e of
 simplifyExpr :: Expr' a -> Val
 simplifyExpr e = case e of
   EVar _ ident -> VStr "TODO" -- to zróbmy w oddzielnym module (variables manipulation)
-  EApp _ ident exprs -> VStr "TODO" -- to też
-  Neg _ expr -> neg expr
-  Not _ expr -> not' expr
-  EAnd _ expr1 expr2 -> and' expr1 expr2
-  EOr _ expr1 expr2 -> or' expr1 expr2
-  ERel _ expr1 relop expr2 -> VStr "TODO"
-  EMul _ expr1 mulop expr2 -> VStr "TODO"
-  EAdd _ expr1 addop expr2 -> VStr "TODO"
+  EApp _ ident es -> VStr "TODO" -- to w module dot. funkcji
+  Neg _ e -> neg $ simplifyExpr e
+  Not _ e -> not' $ simplifyExpr e
+  EAnd _ e1 e2 -> and' (simplifyExpr e1) (simplifyExpr e2)
+  EOr _ e1 e2 -> or' (simplifyExpr e1) (simplifyExpr e2)
+  ERel _ e1 op e2 -> erel op (simplifyExpr e1) (simplifyExpr e2)
+  EMul _ e1 op e2 -> emul op (simplifyExpr e1) (simplifyExpr e2)
+  EAdd _ e1 op e2 -> eadd op (simplifyExpr e1) (simplifyExpr e2)
   _ -> evalExpr e
+    
+neg :: Val -> Val
+neg v = VInt $ - (fromVInt v)
+
+not' :: Val -> Val
+not' v = VBool $ not (fromVBool v)
+
+and' :: Val -> Val -> Val
+and' v1 v2 = VBool $ (fromVBool v1) && (fromVBool v2)
+
+or' :: Val -> Val -> Val
+or' v1 v2 = VBool $ (fromVBool v1) || (fromVBool v2)
+
+eadd :: AddOp' a -> Val -> Val -> Val
+eadd op v1 v2 = case op of
+  Minus _ -> VInt $ (fromVInt v1) - (fromVInt v2)
+  Plus _ -> case v1 of
+    VStr _ -> VStr $ showString (fromVStr v1) (fromVStr v2)
+    VInt _ -> VInt $ (fromVInt v1) + (fromVInt v2)
+
+emul :: MulOp' a -> Val -> Val -> Val
+emul op v1 v2 = case op of
+  Div _ -> VInt $ (fromVInt v1) `div` (fromVInt v2)
+  Mod _ -> VInt $ (fromVInt v1) `mod` (fromVInt v2)
+  Times _ -> case v1 of
+    VStr _ -> VStr $ concat $ replicate (fromIntegral $ fromVInt v2) (fromVStr v1)
+    VInt _ -> case v2 of
+      VStr _ -> VStr $ concat $ replicate (fromIntegral $ fromVInt v1) (fromVStr v2)
+      VInt _ -> VInt $ (fromVInt v1) * (fromVInt v2)
+
+erel :: RelOp' a -> Val -> Val -> Val
+erel op v1 v2 = case v1 of
+  VBool _ -> VBool $ (transRelOp op) (fromVBool v1) (fromVBool v2)
+  VStr  _ -> VBool $ (transRelOp op) (fromVStr v1)  (fromVStr v2)
+  VInt  _ -> VBool $ (transRelOp op) (fromVInt v1)  (fromVInt v2)
   where
-    neg :: Expr' a -> Val
-    neg e = VInt $ - (fromVInt $ simplifyExpr e)
-    not' :: Expr' a -> Val
-    not' e = VBool $ not (fromVBool $ simplifyExpr e)
-    and' :: Expr' a -> Expr' a -> Val
-    and' e1 e2 = VBool $ (fromVBool $ simplifyExpr e1) && (fromVBool $ simplifyExpr e2)
-    or' :: Expr' a -> Expr' a -> Val
-    or' e1 e2 = VBool $ (fromVBool $ simplifyExpr e1) || (fromVBool $ simplifyExpr e2)
-
-transAddOp :: Show a => AddOp' a -> Result
-transAddOp x = case x of
-  Plus _ -> failure x
-  Minus _ -> failure x
-
-transMulOp :: Show a => MulOp' a -> Result
-transMulOp x = case x of
-  Times _ -> failure x
-  Div _ -> failure x
-  Mod _ -> failure x
-
-transRelOp :: Show a => RelOp' a -> Result
-transRelOp x = case x of
-  LTH _ -> failure x
-  LE _ -> failure x
-  GTH _ -> failure x
-  GE _ -> failure x
-  EQU _ -> failure x
-  NE _ -> failure x
+    transRelOp :: Ord a1 => RelOp' a2 -> a1 -> a1 -> Bool
+    transRelOp op = case op of
+      NE  _ -> (/=)
+      EQU _ -> (==)
+      LE  _ -> (<=)
+      GE  _ -> (>=)
+      GTH _ -> (>)
+      LTH _ -> (<)
