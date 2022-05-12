@@ -20,15 +20,25 @@ evalExpr e = case e of
 
 simplifyExpr :: Expr' a -> Val
 simplifyExpr e = case e of
-  EVar _ ident -> VStr "TODO"
-  EApp _ ident exprs -> VStr "TODO"
-  Neg _ expr -> VStr "TODO"
-  Not _ expr -> VStr "TODO"
+  EVar _ ident -> VStr "TODO" -- to zróbmy w oddzielnym module (variables manipulation)
+  EApp _ ident exprs -> VStr "TODO" -- to też
+  Neg _ expr -> neg expr
+  Not _ expr -> not' expr
+  EAnd _ expr1 expr2 -> and' expr1 expr2
+  EOr _ expr1 expr2 -> or' expr1 expr2
+  ERel _ expr1 relop expr2 -> VStr "TODO"
   EMul _ expr1 mulop expr2 -> VStr "TODO"
   EAdd _ expr1 addop expr2 -> VStr "TODO"
-  ERel _ expr1 relop expr2 -> VStr "TODO"
-  EAnd _ expr1 expr2 -> VStr "TODO"
-  EOr _ expr1 expr2 -> VStr "TODO"
+  _ -> evalExpr e
+  where
+    neg :: Expr' a -> Val
+    neg e = VInt $ - (fromVInt $ simplifyExpr e)
+    not' :: Expr' a -> Val
+    not' e = VBool $ not (fromVBool $ simplifyExpr e)
+    and' :: Expr' a -> Expr' a -> Val
+    and' e1 e2 = VBool $ (fromVBool $ simplifyExpr e1) && (fromVBool $ simplifyExpr e2)
+    or' :: Expr' a -> Expr' a -> Val
+    or' e1 e2 = VBool $ (fromVBool $ simplifyExpr e1) || (fromVBool $ simplifyExpr e2)
 
 transAddOp :: Show a => AddOp' a -> Result
 transAddOp x = case x of

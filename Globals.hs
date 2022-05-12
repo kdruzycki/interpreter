@@ -25,3 +25,12 @@ defaultVal t = case t of
   Int _ -> VInt 0
   Bool _ -> VBool False
   Str _ -> VStr ""
+
+fromVInt :: Val -> Integer
+fromVInt (VInt v) = v
+
+fromVBool :: Val -> Bool
+fromVBool (VBool v) = v
+
+fromVStr :: Val -> String
+fromVStr (VStr v) = v 

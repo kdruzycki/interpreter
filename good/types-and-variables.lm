@@ -1,8 +1,8 @@
 int main() {
 
-	int n, m = 10;
-	bool a, b = false;
-	string s = "nope", s_2;
+	int n, m = -(-(10));
+	bool a, b = !true;
+	string s = "no"+"pe", s_2;
 
 	print(n);
 	print(m);

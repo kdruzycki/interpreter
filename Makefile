@@ -27,16 +27,12 @@ AbsLatteMalinowe.hs LexLatteMalinowe.x ParLatteMalinowe.y PrintLatteMalinowe.hs 
 %.hs : %.x
 	${ALEX} ${ALEX_OPTS} $<
 
-Main : AbsLatteMalinowe.hs LexLatteMalinowe.hs ParLatteMalinowe.hs PrintLatteMalinowe.hs Utils.hs Evaluator.hs Interpreter.hs Main.hs
+Main : AbsLatteMalinowe.hs LexLatteMalinowe.hs ParLatteMalinowe.hs PrintLatteMalinowe.hs Utils.hs Globals.hs Evaluator.hs Interpreter.hs Main.hs
 	${GHC} ${GHC_OPTS} -o interpreter $@
 
 # Rules for cleaning generated files.
 
 clean :
 	-rm -f *.hi *.o *.log *.aux *.dvi
-
-distclean : clean
-	-rm -f AbsLatteMalinowe.hs AbsLatteMalinowe.hs.bak ComposOp.hs ComposOp.hs.bak DocLatteMalinowe.txt DocLatteMalinowe.txt.bak ErrM.hs ErrM.hs.bak LayoutLatteMalinowe.hs LayoutLatteMalinowe.hs.bak LexLatteMalinowe.x LexLatteMalinowe.x.bak ParLatteMalinowe.y ParLatteMalinowe.y.bak PrintLatteMalinowe.hs PrintLatteMalinowe.hs.bak SkelLatteMalinowe.hs SkelLatteMalinowe.hs.bak TestLatteMalinowe.hs TestLatteMalinowe.hs.bak XMLLatteMalinowe.hs XMLLatteMalinowe.hs.bak ASTLatteMalinowe.agda ASTLatteMalinowe.agda.bak ParserLatteMalinowe.agda ParserLatteMalinowe.agda.bak IOLib.agda IOLib.agda.bak Main.agda Main.agda.bak LatteMalinowe.dtd LatteMalinowe.dtd.bak TestLatteMalinowe LexLatteMalinowe.hs ParLatteMalinowe.hs ParLatteMalinowe.info ParDataLatteMalinowe.hs Makefile
-
 
 # EOF
