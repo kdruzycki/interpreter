@@ -39,7 +39,10 @@ execBlockM (Block _ stmts) = processSeq execStmtM stmts
 
 execStmtM :: Stmt' a -> WriterT ShowS (State IdentEnv) ()
 execStmtM s = case s of
-  OrdStmt _ os -> case os of 
+  BStmt _ block -> execBlockM block
+  -- Cond _ expr block -> if (fromVBool $ eval expr) then execBlockM block else return ()
+  -- AbsLatteMalinowe.CondElse _ expr block1 block2 -> failure x
+  OrdStmt _ os -> case os of
     Decl _ type_ items -> processSeq (declVarM type_) items
     Print _ expr -> printM expr
     _ -> return ()
@@ -47,23 +50,29 @@ execStmtM s = case s of
   
 printM :: Expr' a -> WriterT ShowS (State IdentEnv) ()
 printM expr = do
-  env <- get
-  let v = runReader (eval expr) env
+  v <- gets $ runReader (eval expr)
   tell $ case v of
     VBool _ -> shows $ fromVBool v
     VInt _ -> shows $ fromVInt v
     VStr _ -> showString $ fromVStr v
 
 declVarM :: Type' a -> Item' a -> WriterT ShowS (State IdentEnv) ()
-declVarM type_ item =
-  modify $ Map.insert ident value
+declVarM type_ item = case item of
+  NoInit _ ident    -> (return $ defaultVal type_)    >>= (decl ident)
+  Init _ ident expr -> (gets $ runReader (eval expr)) >>= (decl ident)
   where
-    ident = case item of
-      NoInit _ ident' -> ident'
-      Init _ ident' _ -> ident'
-    value = case item of
-      NoInit _ _ -> defaultVal type_
-      Init _ _ expr -> runReader (eval expr) Map.empty
+    decl :: Ident -> Val -> WriterT ShowS (State IdentEnv) ()
+    decl i v = modify $ Map.insert i v
+
+-- declVarM :: Type' a -> Item' a -> WriterT ShowS (State IdentEnv) ()
+-- declVarM type_ item = case item of 
+--   NoInit _ ident    -> decl (return $ defaultVal type_) ident
+--   Init _ ident expr -> decl (gets $ runReader (eval expr)) ident
+--   where
+--     decl :: WriterT ShowS (State IdentEnv) () -> Ident -> WriterT ShowS (State IdentEnv) ()
+--     decl m i = do
+--       v <- m
+--       modify $ Map.insert i v
 
 -- transStmt :: Show a => AbsLatteMalinowe.Stmt' a -> Result
 -- transStmt x = case x of
