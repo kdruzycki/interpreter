@@ -9,7 +9,7 @@ import Control.Monad.Trans.Writer.Lazy
 
 import Utils
 import Globals
-import Evaluator
+import Evaluator (eval)
 import AbsLatteMalinowe
 
 interpret :: Show a => Program' a -> Result
@@ -41,13 +41,18 @@ execStmtM :: Stmt' a -> WriterT ShowS (State IdentEnv) ()
 execStmtM s = case s of
   OrdStmt _ os -> case os of 
     Decl _ type_ items -> processSeq (declVarM type_) items
-    Print _ expr -> tell $ case se of
-      VBool _ -> shows $ fromVBool se
-      VInt _ -> shows $ fromVInt se
-      VStr _ -> showString $ fromVStr se
-      where se = simplifyExpr expr
+    Print _ expr -> printM expr
     _ -> return ()
   _ -> return ()
+  
+printM :: Expr' a -> WriterT ShowS (State IdentEnv) ()
+printM expr = do
+  env <- get
+  let v = runReader (eval expr) env
+  tell $ case v of
+    VBool _ -> shows $ fromVBool v
+    VInt _ -> shows $ fromVInt v
+    VStr _ -> showString $ fromVStr v
 
 declVarM :: Type' a -> Item' a -> WriterT ShowS (State IdentEnv) ()
 declVarM type_ item =
@@ -58,7 +63,7 @@ declVarM type_ item =
       Init _ ident' _ -> ident'
     value = case item of
       NoInit _ _ -> defaultVal type_
-      Init _ _ expr -> evalExpr expr
+      Init _ _ expr -> runReader (eval expr) Map.empty
 
 -- transStmt :: Show a => AbsLatteMalinowe.Stmt' a -> Result
 -- transStmt x = case x of
