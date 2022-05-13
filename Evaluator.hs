@@ -68,9 +68,9 @@ rel op v1 v2 = case v1 of
   where
     transRelOp :: Ord a1 => RelOp' a2 -> a1 -> a1 -> Bool
     transRelOp op = case op of
-      AbsLatteMalinowe.NE _ -> (/=)
-      AbsLatteMalinowe.EQ _ -> (==)
-      AbsLatteMalinowe.LE _ -> (<=)
-      AbsLatteMalinowe.GE _ -> (>=)
-      AbsLatteMalinowe.GT _ -> (>)
-      AbsLatteMalinowe.LT _ -> (<)
+      NEQ _ -> (/=)
+      EQU _ -> (==)
+      LTE _ -> (<=)
+      GTE _ -> (>=)
+      GTH _ -> (>)
+      LTH _ -> (<)

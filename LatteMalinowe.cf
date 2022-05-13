@@ -54,12 +54,12 @@ Minus. AddOp ::= "-" ;
 Times. MulOp ::= "*" ;
 Div. MulOp ::= "/" ;
 Mod. MulOp ::= "%" ;
-LT. RelOp ::= "<" ;
-LE. RelOp ::= "<=" ;
-GT. RelOp ::= ">" ;
-GE. RelOp ::= ">=" ;
-EQ. RelOp ::= "==" ;
-NE. RelOp ::= "!=" ;
+LTH. RelOp ::= "<" ;
+LTE. RelOp ::= "<=" ;
+GTH. RelOp ::= ">" ;
+GTE. RelOp ::= ">=" ;
+EQU. RelOp ::= "==" ;
+NEQ. RelOp ::= "!=" ;
 -- comments ------------------------------------------------
 comment "#" ;
 comment "//" ;

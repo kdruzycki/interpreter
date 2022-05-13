@@ -240,9 +240,9 @@ instance Print (AbsLatteMalinowe.MulOp' a) where
 
 instance Print (AbsLatteMalinowe.RelOp' a) where
   prt i = \case
-    AbsLatteMalinowe.LT _ -> prPrec i 0 (concatD [doc (showString "<")])
-    AbsLatteMalinowe.LE _ -> prPrec i 0 (concatD [doc (showString "<=")])
-    AbsLatteMalinowe.GT _ -> prPrec i 0 (concatD [doc (showString ">")])
-    AbsLatteMalinowe.GE _ -> prPrec i 0 (concatD [doc (showString ">=")])
-    AbsLatteMalinowe.EQ _ -> prPrec i 0 (concatD [doc (showString "==")])
-    AbsLatteMalinowe.NE _ -> prPrec i 0 (concatD [doc (showString "!=")])
+    AbsLatteMalinowe.LTH _ -> prPrec i 0 (concatD [doc (showString "<")])
+    AbsLatteMalinowe.LTE _ -> prPrec i 0 (concatD [doc (showString "<=")])
+    AbsLatteMalinowe.GTH _ -> prPrec i 0 (concatD [doc (showString ">")])
+    AbsLatteMalinowe.GTE _ -> prPrec i 0 (concatD [doc (showString ">=")])
+    AbsLatteMalinowe.EQU _ -> prPrec i 0 (concatD [doc (showString "==")])
+    AbsLatteMalinowe.NEQ _ -> prPrec i 0 (concatD [doc (showString "!=")])

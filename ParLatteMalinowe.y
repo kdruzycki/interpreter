@@ -205,12 +205,12 @@ MulOp
 
 RelOp :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.RelOp) }
 RelOp
-  : '<' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LT (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | '<=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | '>' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.GT (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | '>=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.GE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | '==' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.EQ (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | '!=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.NE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  : '<' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LTH (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | '<=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LTE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | '>' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.GTH (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | '>=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.GTE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | '==' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.EQU (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | '!=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.NEQ (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
 
 {
 

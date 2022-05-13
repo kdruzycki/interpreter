@@ -907,42 +907,42 @@ happyReduce_67 = happySpecReduce_1  24# happyReduction_67
 happyReduction_67 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn28
-		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.LT (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
+		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.LTH (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_68 = happySpecReduce_1  24# happyReduction_68
 happyReduction_68 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn28
-		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.LE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
+		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.LTE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_69 = happySpecReduce_1  24# happyReduction_69
 happyReduction_69 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn28
-		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.GT (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
+		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.GTH (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_70 = happySpecReduce_1  24# happyReduction_70
 happyReduction_70 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn28
-		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.GE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
+		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.GTE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_71 = happySpecReduce_1  24# happyReduction_71
 happyReduction_71 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn28
-		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.EQ (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
+		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.EQU (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_72 = happySpecReduce_1  24# happyReduction_72
 happyReduction_72 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn28
-		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.NE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
+		 ((uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1), AbsLatteMalinowe.NEQ (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol happy_var_1)))
 	)}
 
 happyNewToken action sts stk [] =

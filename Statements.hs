@@ -10,8 +10,8 @@ import Globals
 import AbsLatteMalinowe
 import Evaluator (evalExpr)
 
-execBlock :: Block' a -> String
-execBlock b = (evalState (execWriterT (execBlockM b)) Map.empty) "\n"
+execBlock :: Block' a -> ShowS
+execBlock b = (evalState (execWriterT (execBlockM b)) Map.empty)
 
 execBlockM :: Block' a -> WriterT ShowS (State VarEnv) ()
 execBlockM (Block _ stmts) = processSeq execStmtM stmts

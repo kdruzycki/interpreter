@@ -88,7 +88,7 @@ data MulOp' a = Times a | Div a | Mod a
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type RelOp = RelOp' BNFC'Position
-data RelOp' a = LT a | LE a | GT a | GE a | EQ a | NE a
+data RelOp' a = LTH a | LTE a | GTH a | GTE a | EQU a | NEQ a
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 newtype Ident = Ident String
@@ -185,10 +185,10 @@ instance HasPosition MulOp where
 
 instance HasPosition RelOp where
   hasPosition = \case
-    LT p -> p
-    LE p -> p
-    GT p -> p
-    GE p -> p
-    EQ p -> p
-    NE p -> p
+    LTH p -> p
+    LTE p -> p
+    GTH p -> p
+    GTE p -> p
+    EQU p -> p
+    NEQ p -> p
 
