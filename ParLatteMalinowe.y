@@ -114,12 +114,8 @@ Stmt
   : Block { (fst $1, AbsLatteMalinowe.BStmt (fst $1) (snd $1)) }
   | 'if' '(' Expr ')' Block { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.Cond (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
   | 'if' '(' Expr ')' Block 'else' Block { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.CondElse (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $7)) }
-  | OrdStmt { (fst $1, AbsLatteMalinowe.OrdStmt (fst $1) (snd $1)) }
-
-OrdStmt :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.OrdStmt) }
-OrdStmt
-  : 'while' '(' Expr ')' LBlock { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.While (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
-  | 'for' '(' Ident 'from' Expr 'to' Expr ')' LBlock { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.For (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $7) (snd $9)) }
+  | 'while' '(' Expr ')' Block { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.While (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
+  | 'for' '(' Ident 'from' Expr 'to' Expr ')' Block { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.For (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $7) (snd $9)) }
   | ';' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.Empty (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
   | Type ListItem ';' { (fst $1, AbsLatteMalinowe.Decl (fst $1) (snd $1) (snd $2)) }
   | Ident '=' Expr ';' { (fst $1, AbsLatteMalinowe.Ass (fst $1) (snd $1) (snd $3)) }
@@ -129,6 +125,8 @@ OrdStmt
   | 'return' ';' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.VRet (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
   | 'print' '(' Expr ')' ';' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.Print (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3)) }
   | Expr ';' { (fst $1, AbsLatteMalinowe.SExp (fst $1) (snd $1)) }
+  | 'break' ';' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.Break (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | 'continue' ';' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.Continue (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
 
 Item :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Item) }
 Item
@@ -140,24 +138,6 @@ ListItem
   : Item { (fst $1, (:[]) (snd $1)) }
   | Item ',' ListItem { (fst $1, (:) (snd $1) (snd $3)) }
 
-LBlock :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.LBlock) }
-LBlock
-  : '{' ListLStmt '}' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LBlock (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $2)) }
-
-ListLStmt :: { (AbsLatteMalinowe.BNFC'Position, [AbsLatteMalinowe.LStmt]) }
-ListLStmt
-  : {- empty -} { (AbsLatteMalinowe.BNFC'NoPosition, []) }
-  | LStmt ListLStmt { (fst $1, (:) (snd $1) (snd $2)) }
-
-LStmt :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.LStmt) }
-LStmt
-  : OrdStmt { (fst $1, AbsLatteMalinowe.LOrdStmt (fst $1) (snd $1)) }
-  | LBlock { (fst $1, AbsLatteMalinowe.LBStmt (fst $1) (snd $1)) }
-  | 'if' '(' Expr ')' LBlock { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LCond (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
-  | 'if' '(' Expr ')' LBlock 'else' LBlock { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LCondElse (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $7)) }
-  | 'break' ';' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LBreak (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | 'continue' ';' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LContinue (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-
 Type :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Type) }
 Type
   : 'int' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.Int (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
@@ -167,12 +147,12 @@ Type
 
 Expr6 :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Expr) }
 Expr6
-  : Ident { (fst $1, AbsLatteMalinowe.EVar (fst $1) (snd $1)) }
-  | Integer { (fst $1, AbsLatteMalinowe.ELitInt (fst $1) (snd $1)) }
-  | 'true' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.ELitTrue (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | 'false' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.ELitFalse (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | Ident '(' ListExpr ')' { (fst $1, AbsLatteMalinowe.EApp (fst $1) (snd $1) (snd $3)) }
-  | String { (fst $1, AbsLatteMalinowe.EString (fst $1) (snd $1)) }
+  : Ident { (fst $1, AbsLatteMalinowe.Var (fst $1) (snd $1)) }
+  | Integer { (fst $1, AbsLatteMalinowe.LitInt (fst $1) (snd $1)) }
+  | 'true' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LitTrue (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | 'false' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LitFalse (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | String { (fst $1, AbsLatteMalinowe.LitString (fst $1) (snd $1)) }
+  | Ident '(' ListExpr ')' { (fst $1, AbsLatteMalinowe.App (fst $1) (snd $1) (snd $3)) }
   | '(' Expr ')' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), (snd $2)) }
 
 Expr5 :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Expr) }
@@ -183,27 +163,27 @@ Expr5
 
 Expr4 :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Expr) }
 Expr4
-  : Expr4 MulOp Expr5 { (fst $1, AbsLatteMalinowe.EMul (fst $1) (snd $1) (snd $2) (snd $3)) }
+  : Expr4 MulOp Expr5 { (fst $1, AbsLatteMalinowe.Mul (fst $1) (snd $1) (snd $2) (snd $3)) }
   | Expr5 { (fst $1, (snd $1)) }
 
 Expr3 :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Expr) }
 Expr3
-  : Expr3 AddOp Expr4 { (fst $1, AbsLatteMalinowe.EAdd (fst $1) (snd $1) (snd $2) (snd $3)) }
+  : Expr3 AddOp Expr4 { (fst $1, AbsLatteMalinowe.Add (fst $1) (snd $1) (snd $2) (snd $3)) }
   | Expr4 { (fst $1, (snd $1)) }
 
 Expr2 :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Expr) }
 Expr2
-  : Expr2 RelOp Expr3 { (fst $1, AbsLatteMalinowe.ERel (fst $1) (snd $1) (snd $2) (snd $3)) }
+  : Expr2 RelOp Expr3 { (fst $1, AbsLatteMalinowe.Rel (fst $1) (snd $1) (snd $2) (snd $3)) }
   | Expr3 { (fst $1, (snd $1)) }
 
 Expr1 :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Expr) }
 Expr1
-  : Expr2 '&&' Expr1 { (fst $1, AbsLatteMalinowe.EAnd (fst $1) (snd $1) (snd $3)) }
+  : Expr2 '&&' Expr1 { (fst $1, AbsLatteMalinowe.And (fst $1) (snd $1) (snd $3)) }
   | Expr2 { (fst $1, (snd $1)) }
 
 Expr :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.Expr) }
 Expr
-  : Expr1 '||' Expr { (fst $1, AbsLatteMalinowe.EOr (fst $1) (snd $1) (snd $3)) }
+  : Expr1 '||' Expr { (fst $1, AbsLatteMalinowe.Or (fst $1) (snd $1) (snd $3)) }
   | Expr1 { (fst $1, (snd $1)) }
 
 ListExpr :: { (AbsLatteMalinowe.BNFC'Position, [AbsLatteMalinowe.Expr]) }
@@ -225,11 +205,11 @@ MulOp
 
 RelOp :: { (AbsLatteMalinowe.BNFC'Position, AbsLatteMalinowe.RelOp) }
 RelOp
-  : '<' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LTH (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  : '<' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LT (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
   | '<=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.LE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | '>' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.GTH (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | '>' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.GT (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
   | '>=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.GE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
-  | '==' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.EQU (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
+  | '==' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.EQ (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
   | '!=' { (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1), AbsLatteMalinowe.NE (uncurry AbsLatteMalinowe.BNFC'Position (tokenLineCol $1))) }
 
 {

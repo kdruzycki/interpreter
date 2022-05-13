@@ -50,18 +50,19 @@ execStmtM s = case s of
     if (fromVBool v)
       then execBlockM b1
       else execBlockM b2
-  OrdStmt _ os -> case os of
-    Empty _ -> return ()
-    SExp _ e -> (gets $ evalExpr e) >> (return ())
-    Decl _ type_ items -> processSeq (declVarM type_) items
-    Print _ expr -> printM expr
-    Ass _ ident expr -> assM ident expr
-    Incr _ ident -> mapVarIntM ident (+1)
-    Decr _ ident -> mapVarIntM ident (+(-1))
-    -- AbsLatteMalinowe.While _ expr lblock -> failure x
-    -- AbsLatteMalinowe.For _ ident expr1 expr2 lblock -> failure x
-    -- AbsLatteMalinowe.Ret _ expr -> failure x
-    -- AbsLatteMalinowe.VRet _ -> failure x
+  Empty _ -> return ()
+  SExp _ e -> (gets $ evalExpr e) >> (return ())
+  Decl _ type_ items -> processSeq (declVarM type_) items
+  Print _ expr -> printM expr
+  Ass _ ident expr -> assM ident expr
+  Incr _ ident -> mapVarIntM ident (+1)
+  Decr _ ident -> mapVarIntM ident (+(-1))
+  -- AbsLatteMalinowe.While _ expr lblock -> failure x
+  -- AbsLatteMalinowe.For _ ident expr1 expr2 lblock -> failure x
+  -- AbsLatteMalinowe.Ret _ expr -> failure x
+  -- AbsLatteMalinowe.VRet _ -> failure x
+  -- AbsLatteMalinowe.Break _ -> failure x
+  -- AbsLatteMalinowe.Continue _ -> failure x
   
 printM :: Expr' a -> WriterT ShowS (State IdentEnv) ()
 printM e = do
@@ -88,29 +89,3 @@ mapVarIntM i f = do
 
 saveVarM :: Ident -> Val -> WriterT ShowS (State IdentEnv) ()
 saveVarM i v = modify $ Map.insert i v
-
--- transItem :: Show a => AbsLatteMalinowe.Item' a -> Result
--- transItem x = case x of
---   AbsLatteMalinowe.NoInit _ ident -> failure x
---   AbsLatteMalinowe.Init _ ident expr -> failure x
-
--- transLBlock :: Show a => AbsLatteMalinowe.LBlock' a -> Result
--- transLBlock x = case x of
---   AbsLatteMalinowe.LBlock _ lstmts -> failure x
-
--- transLStmt :: Show a => AbsLatteMalinowe.LStmt' a -> Result
--- transLStmt x = case x of
---   AbsLatteMalinowe.LOrdStmt _ ordstmt -> failure x
---   AbsLatteMalinowe.LBStmt _ lblock -> failure x
---   AbsLatteMalinowe.LCond _ expr lblock -> failure x
---   AbsLatteMalinowe.LCondElse _ expr lblock1 lblock2 -> failure x
---   AbsLatteMalinowe.LBreak _ -> failure x
---   AbsLatteMalinowe.LContinue _ -> failure x
-
--- transType :: Show a => AbsLatteMalinowe.Type' a -> Result
--- transType x = case x of
---   AbsLatteMalinowe.Int _ -> failure x
---   AbsLatteMalinowe.Str _ -> failure x
---   AbsLatteMalinowe.Bool _ -> failure x
---   AbsLatteMalinowe.Void _ -> failure x
-

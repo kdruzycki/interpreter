@@ -8,26 +8,25 @@ import Globals
 import AbsLatteMalinowe
 
 -- TODO zwracanie Result, zamiast Val, żeby można było dać ulubiony błąd wszystkich, czyli dzielenie przez zero
--- TODO można usunąć E np. EVar -> Var, bo brzydko jest
 
 evalExpr :: Expr' a -> IdentEnv -> Val
 evalExpr e = runReader (eval e)
 
 eval :: Expr' a -> Reader IdentEnv Val
 eval e = case e of
-  ELitInt _ n -> return $ VInt n
-  ELitTrue _ -> return $ VBool True
-  ELitFalse _ -> return $ VBool False
-  EString _ s -> return $ VStr s
-  EVar _ ident -> var ident 
-  EApp _ ident es -> return $ VStr "TODO" -- to w module dot. funkcji
+  LitInt _ n -> return $ VInt n
+  LitTrue _ -> return $ VBool True
+  LitFalse _ -> return $ VBool False
+  LitString _ s -> return $ VStr s
+  Var _ ident -> var ident 
+  App _ ident es -> return $ VStr "TODO" -- to w module dot. funkcji
   Neg _ e -> neg <$> (eval e)
   Not _ e -> not' <$> (eval e)
-  EAnd _ e1 e2 -> and' <$> (eval e1) <*> (eval e2)
-  EOr _ e1 e2 -> or' <$> (eval e1) <*> (eval e2)
-  ERel _ e1 op e2 -> rel op <$> (eval e1) <*> (eval e2)
-  EMul _ e1 op e2 -> mul op <$> (eval e1) <*> (eval e2)
-  EAdd _ e1 op e2 -> add op <$> (eval e1) <*> (eval e2)
+  And _ e1 e2 -> and' <$> (eval e1) <*> (eval e2)
+  Or  _ e1 e2 -> or' <$> (eval e1) <*> (eval e2)
+  Rel _ e1 op e2 -> rel op <$> (eval e1) <*> (eval e2)
+  Mul _ e1 op e2 -> mul op <$> (eval e1) <*> (eval e2)
+  Add _ e1 op e2 -> add op <$> (eval e1) <*> (eval e2)
 
 var :: Ident -> Reader IdentEnv Val
 var ident = asks $ Map.findWithDefault (VBool False) ident
@@ -69,9 +68,9 @@ rel op v1 v2 = case v1 of
   where
     transRelOp :: Ord a1 => RelOp' a2 -> a1 -> a1 -> Bool
     transRelOp op = case op of
-      NE  _ -> (/=)
-      EQU _ -> (==)
-      LE  _ -> (<=)
-      GE  _ -> (>=)
-      GTH _ -> (>)
-      LTH _ -> (<)
+      NE _ -> (/=)
+      EQ _ -> (==)
+      LE _ -> (<=)
+      GE _ -> (>=)
+      GT _ -> (>)
+      LT _ -> (<)

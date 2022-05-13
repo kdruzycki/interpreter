@@ -10,7 +10,7 @@
 
 module AbsLatteMalinowe where
 
-import Prelude (Integer, String, Bool)
+import Prelude (Integer, String)
 import qualified Prelude as C
   ( Eq, Ord, Show, Read
   , Functor, Foldable, Traversable
@@ -39,13 +39,8 @@ data Stmt' a
     = BStmt a (Block' a)
     | Cond a (Expr' a) (Block' a)
     | CondElse a (Expr' a) (Block' a) (Block' a)
-    | OrdStmt a (OrdStmt' a)
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
-
-type OrdStmt = OrdStmt' BNFC'Position
-data OrdStmt' a
-    = While a (Expr' a) (LBlock' a)
-    | For a Ident (Expr' a) (Expr' a) (LBlock' a)
+    | While a (Expr' a) (Block' a)
+    | For a Ident (Expr' a) (Expr' a) (Block' a)
     | Empty a
     | Decl a (Type' a) [Item' a]
     | Ass a Ident (Expr' a)
@@ -55,24 +50,12 @@ data OrdStmt' a
     | VRet a
     | Print a (Expr' a)
     | SExp a (Expr' a)
+    | Break a
+    | Continue a
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type Item = Item' BNFC'Position
 data Item' a = NoInit a Ident | Init a Ident (Expr' a)
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
-
-type LBlock = LBlock' BNFC'Position
-data LBlock' a = LBlock a [LStmt' a]
-  deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
-
-type LStmt = LStmt' BNFC'Position
-data LStmt' a
-    = LOrdStmt a (OrdStmt' a)
-    | LBStmt a (LBlock' a)
-    | LCond a (Expr' a) (LBlock' a)
-    | LCondElse a (Expr' a) (LBlock' a) (LBlock' a)
-    | LBreak a
-    | LContinue a
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type Type = Type' BNFC'Position
@@ -81,19 +64,19 @@ data Type' a = Int a | Str a | Bool a | Void a
 
 type Expr = Expr' BNFC'Position
 data Expr' a
-    = EVar a Ident
-    | ELitInt a Integer
-    | ELitTrue a
-    | ELitFalse a
-    | EApp a Ident [Expr' a]
-    | EString a String
+    = Var a Ident
+    | LitInt a Integer
+    | LitTrue a
+    | LitFalse a
+    | LitString a String
+    | App a Ident [Expr' a]
     | Neg a (Expr' a)
     | Not a (Expr' a)
-    | EMul a (Expr' a) (MulOp' a) (Expr' a)
-    | EAdd a (Expr' a) (AddOp' a) (Expr' a)
-    | ERel a (Expr' a) (RelOp' a) (Expr' a)
-    | EAnd a (Expr' a) (Expr' a)
-    | EOr a (Expr' a) (Expr' a)
+    | Mul a (Expr' a) (MulOp' a) (Expr' a)
+    | Add a (Expr' a) (AddOp' a) (Expr' a)
+    | Rel a (Expr' a) (RelOp' a) (Expr' a)
+    | And a (Expr' a) (Expr' a)
+    | Or a (Expr' a) (Expr' a)
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type AddOp = AddOp' BNFC'Position
@@ -105,7 +88,7 @@ data MulOp' a = Times a | Div a | Mod a
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type RelOp = RelOp' BNFC'Position
-data RelOp' a = LTH a | LE a | GTH a | GE a | EQU a | NE a
+data RelOp' a = LT a | LE a | GT a | GE a | EQ a | NE a
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 newtype Ident = Ident String
@@ -147,10 +130,6 @@ instance HasPosition Stmt where
     BStmt p _ -> p
     Cond p _ _ -> p
     CondElse p _ _ _ -> p
-    OrdStmt p _ -> p
-
-instance HasPosition OrdStmt where
-  hasPosition = \case
     While p _ _ -> p
     For p _ _ _ _ -> p
     Empty p -> p
@@ -162,24 +141,13 @@ instance HasPosition OrdStmt where
     VRet p -> p
     Print p _ -> p
     SExp p _ -> p
+    Break p -> p
+    Continue p -> p
 
 instance HasPosition Item where
   hasPosition = \case
     NoInit p _ -> p
     Init p _ _ -> p
-
-instance HasPosition LBlock where
-  hasPosition = \case
-    LBlock p _ -> p
-
-instance HasPosition LStmt where
-  hasPosition = \case
-    LOrdStmt p _ -> p
-    LBStmt p _ -> p
-    LCond p _ _ -> p
-    LCondElse p _ _ _ -> p
-    LBreak p -> p
-    LContinue p -> p
 
 instance HasPosition Type where
   hasPosition = \case
@@ -190,19 +158,19 @@ instance HasPosition Type where
 
 instance HasPosition Expr where
   hasPosition = \case
-    EVar p _ -> p
-    ELitInt p _ -> p
-    ELitTrue p -> p
-    ELitFalse p -> p
-    EApp p _ _ -> p
-    EString p _ -> p
+    Var p _ -> p
+    LitInt p _ -> p
+    LitTrue p -> p
+    LitFalse p -> p
+    LitString p _ -> p
+    App p _ _ -> p
     Neg p _ -> p
     Not p _ -> p
-    EMul p _ _ _ -> p
-    EAdd p _ _ _ -> p
-    ERel p _ _ _ -> p
-    EAnd p _ _ -> p
-    EOr p _ _ -> p
+    Mul p _ _ _ -> p
+    Add p _ _ _ -> p
+    Rel p _ _ _ -> p
+    And p _ _ -> p
+    Or p _ _ -> p
 
 instance HasPosition AddOp where
   hasPosition = \case
@@ -217,10 +185,10 @@ instance HasPosition MulOp where
 
 instance HasPosition RelOp where
   hasPosition = \case
-    LTH p -> p
+    LT p -> p
     LE p -> p
-    GTH p -> p
+    GT p -> p
     GE p -> p
-    EQU p -> p
+    EQ p -> p
     NE p -> p
 

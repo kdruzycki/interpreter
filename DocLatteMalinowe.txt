@@ -66,9 +66,8 @@ All other symbols are terminals.
   | //Stmt// | -> | //Block//
   |  |  **|**  | ``if`` ``(`` //Expr// ``)`` //Block//
   |  |  **|**  | ``if`` ``(`` //Expr// ``)`` //Block// ``else`` //Block//
-  |  |  **|**  | //OrdStmt//
-  | //OrdStmt// | -> | ``while`` ``(`` //Expr// ``)`` //LBlock//
-  |  |  **|**  | ``for`` ``(`` //Ident// ``from`` //Expr// ``to`` //Expr// ``)`` //LBlock//
+  |  |  **|**  | ``while`` ``(`` //Expr// ``)`` //Block//
+  |  |  **|**  | ``for`` ``(`` //Ident// ``from`` //Expr// ``to`` //Expr// ``)`` //Block//
   |  |  **|**  | ``;``
   |  |  **|**  | //Type// //[Item]// ``;``
   |  |  **|**  | //Ident// ``=`` //Expr// ``;``
@@ -78,19 +77,12 @@ All other symbols are terminals.
   |  |  **|**  | ``return`` ``;``
   |  |  **|**  | ``print`` ``(`` //Expr// ``)`` ``;``
   |  |  **|**  | //Expr// ``;``
+  |  |  **|**  | ``break`` ``;``
+  |  |  **|**  | ``continue`` ``;``
   | //Item// | -> | //Ident//
   |  |  **|**  | //Ident// ``=`` //Expr//
   | //[Item]// | -> | //Item//
   |  |  **|**  | //Item// ``,`` //[Item]//
-  | //LBlock// | -> | ``{`` //[LStmt]// ``}``
-  | //[LStmt]// | -> | **eps**
-  |  |  **|**  | //LStmt// //[LStmt]//
-  | //LStmt// | -> | //OrdStmt//
-  |  |  **|**  | //LBlock//
-  |  |  **|**  | ``if`` ``(`` //Expr// ``)`` //LBlock//
-  |  |  **|**  | ``if`` ``(`` //Expr// ``)`` //LBlock// ``else`` //LBlock//
-  |  |  **|**  | ``break`` ``;``
-  |  |  **|**  | ``continue`` ``;``
   | //Type// | -> | ``int``
   |  |  **|**  | ``string``
   |  |  **|**  | ``bool``
@@ -99,8 +91,8 @@ All other symbols are terminals.
   |  |  **|**  | //Integer//
   |  |  **|**  | ``true``
   |  |  **|**  | ``false``
-  |  |  **|**  | //Ident// ``(`` //[Expr]// ``)``
   |  |  **|**  | //String//
+  |  |  **|**  | //Ident// ``(`` //[Expr]// ``)``
   |  |  **|**  | ``(`` //Expr// ``)``
   | //Expr5// | -> | ``-`` //Expr6//
   |  |  **|**  | ``!`` //Expr6//

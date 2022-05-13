@@ -175,12 +175,8 @@ instance Print (AbsLatteMalinowe.Stmt' a) where
     AbsLatteMalinowe.BStmt _ block -> prPrec i 0 (concatD [prt 0 block])
     AbsLatteMalinowe.Cond _ expr block -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString ")"), prt 0 block])
     AbsLatteMalinowe.CondElse _ expr block1 block2 -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString ")"), prt 0 block1, doc (showString "else"), prt 0 block2])
-    AbsLatteMalinowe.OrdStmt _ ordstmt -> prPrec i 0 (concatD [prt 0 ordstmt])
-
-instance Print (AbsLatteMalinowe.OrdStmt' a) where
-  prt i = \case
-    AbsLatteMalinowe.While _ expr lblock -> prPrec i 0 (concatD [doc (showString "while"), doc (showString "("), prt 0 expr, doc (showString ")"), prt 0 lblock])
-    AbsLatteMalinowe.For _ id_ expr1 expr2 lblock -> prPrec i 0 (concatD [doc (showString "for"), doc (showString "("), prt 0 id_, doc (showString "from"), prt 0 expr1, doc (showString "to"), prt 0 expr2, doc (showString ")"), prt 0 lblock])
+    AbsLatteMalinowe.While _ expr block -> prPrec i 0 (concatD [doc (showString "while"), doc (showString "("), prt 0 expr, doc (showString ")"), prt 0 block])
+    AbsLatteMalinowe.For _ id_ expr1 expr2 block -> prPrec i 0 (concatD [doc (showString "for"), doc (showString "("), prt 0 id_, doc (showString "from"), prt 0 expr1, doc (showString "to"), prt 0 expr2, doc (showString ")"), prt 0 block])
     AbsLatteMalinowe.Empty _ -> prPrec i 0 (concatD [doc (showString ";")])
     AbsLatteMalinowe.Decl _ type_ items -> prPrec i 0 (concatD [prt 0 type_, prt 0 items, doc (showString ";")])
     AbsLatteMalinowe.Ass _ id_ expr -> prPrec i 0 (concatD [prt 0 id_, doc (showString "="), prt 0 expr, doc (showString ";")])
@@ -190,6 +186,8 @@ instance Print (AbsLatteMalinowe.OrdStmt' a) where
     AbsLatteMalinowe.VRet _ -> prPrec i 0 (concatD [doc (showString "return"), doc (showString ";")])
     AbsLatteMalinowe.Print _ expr -> prPrec i 0 (concatD [doc (showString "print"), doc (showString "("), prt 0 expr, doc (showString ")"), doc (showString ";")])
     AbsLatteMalinowe.SExp _ expr -> prPrec i 0 (concatD [prt 0 expr, doc (showString ";")])
+    AbsLatteMalinowe.Break _ -> prPrec i 0 (concatD [doc (showString "break"), doc (showString ";")])
+    AbsLatteMalinowe.Continue _ -> prPrec i 0 (concatD [doc (showString "continue"), doc (showString ";")])
 
 instance Print (AbsLatteMalinowe.Item' a) where
   prt i = \case
@@ -201,23 +199,6 @@ instance Print [AbsLatteMalinowe.Item' a] where
   prt _ [x] = concatD [prt 0 x]
   prt _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
-instance Print (AbsLatteMalinowe.LBlock' a) where
-  prt i = \case
-    AbsLatteMalinowe.LBlock _ lstmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 lstmts, doc (showString "}")])
-
-instance Print [AbsLatteMalinowe.LStmt' a] where
-  prt _ [] = concatD []
-  prt _ (x:xs) = concatD [prt 0 x, prt 0 xs]
-
-instance Print (AbsLatteMalinowe.LStmt' a) where
-  prt i = \case
-    AbsLatteMalinowe.LOrdStmt _ ordstmt -> prPrec i 0 (concatD [prt 0 ordstmt])
-    AbsLatteMalinowe.LBStmt _ lblock -> prPrec i 0 (concatD [prt 0 lblock])
-    AbsLatteMalinowe.LCond _ expr lblock -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString ")"), prt 0 lblock])
-    AbsLatteMalinowe.LCondElse _ expr lblock1 lblock2 -> prPrec i 0 (concatD [doc (showString "if"), doc (showString "("), prt 0 expr, doc (showString ")"), prt 0 lblock1, doc (showString "else"), prt 0 lblock2])
-    AbsLatteMalinowe.LBreak _ -> prPrec i 0 (concatD [doc (showString "break"), doc (showString ";")])
-    AbsLatteMalinowe.LContinue _ -> prPrec i 0 (concatD [doc (showString "continue"), doc (showString ";")])
-
 instance Print (AbsLatteMalinowe.Type' a) where
   prt i = \case
     AbsLatteMalinowe.Int _ -> prPrec i 0 (concatD [doc (showString "int")])
@@ -227,19 +208,19 @@ instance Print (AbsLatteMalinowe.Type' a) where
 
 instance Print (AbsLatteMalinowe.Expr' a) where
   prt i = \case
-    AbsLatteMalinowe.EVar _ id_ -> prPrec i 6 (concatD [prt 0 id_])
-    AbsLatteMalinowe.ELitInt _ n -> prPrec i 6 (concatD [prt 0 n])
-    AbsLatteMalinowe.ELitTrue _ -> prPrec i 6 (concatD [doc (showString "true")])
-    AbsLatteMalinowe.ELitFalse _ -> prPrec i 6 (concatD [doc (showString "false")])
-    AbsLatteMalinowe.EApp _ id_ exprs -> prPrec i 6 (concatD [prt 0 id_, doc (showString "("), prt 0 exprs, doc (showString ")")])
-    AbsLatteMalinowe.EString _ str -> prPrec i 6 (concatD [printString str])
+    AbsLatteMalinowe.Var _ id_ -> prPrec i 6 (concatD [prt 0 id_])
+    AbsLatteMalinowe.LitInt _ n -> prPrec i 6 (concatD [prt 0 n])
+    AbsLatteMalinowe.LitTrue _ -> prPrec i 6 (concatD [doc (showString "true")])
+    AbsLatteMalinowe.LitFalse _ -> prPrec i 6 (concatD [doc (showString "false")])
+    AbsLatteMalinowe.LitString _ str -> prPrec i 6 (concatD [printString str])
+    AbsLatteMalinowe.App _ id_ exprs -> prPrec i 6 (concatD [prt 0 id_, doc (showString "("), prt 0 exprs, doc (showString ")")])
     AbsLatteMalinowe.Neg _ expr -> prPrec i 5 (concatD [doc (showString "-"), prt 6 expr])
     AbsLatteMalinowe.Not _ expr -> prPrec i 5 (concatD [doc (showString "!"), prt 6 expr])
-    AbsLatteMalinowe.EMul _ expr1 mulop expr2 -> prPrec i 4 (concatD [prt 4 expr1, prt 0 mulop, prt 5 expr2])
-    AbsLatteMalinowe.EAdd _ expr1 addop expr2 -> prPrec i 3 (concatD [prt 3 expr1, prt 0 addop, prt 4 expr2])
-    AbsLatteMalinowe.ERel _ expr1 relop expr2 -> prPrec i 2 (concatD [prt 2 expr1, prt 0 relop, prt 3 expr2])
-    AbsLatteMalinowe.EAnd _ expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "&&"), prt 1 expr2])
-    AbsLatteMalinowe.EOr _ expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "||"), prt 0 expr2])
+    AbsLatteMalinowe.Mul _ expr1 mulop expr2 -> prPrec i 4 (concatD [prt 4 expr1, prt 0 mulop, prt 5 expr2])
+    AbsLatteMalinowe.Add _ expr1 addop expr2 -> prPrec i 3 (concatD [prt 3 expr1, prt 0 addop, prt 4 expr2])
+    AbsLatteMalinowe.Rel _ expr1 relop expr2 -> prPrec i 2 (concatD [prt 2 expr1, prt 0 relop, prt 3 expr2])
+    AbsLatteMalinowe.And _ expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "&&"), prt 1 expr2])
+    AbsLatteMalinowe.Or _ expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "||"), prt 0 expr2])
 
 instance Print [AbsLatteMalinowe.Expr' a] where
   prt _ [] = concatD []
@@ -259,9 +240,9 @@ instance Print (AbsLatteMalinowe.MulOp' a) where
 
 instance Print (AbsLatteMalinowe.RelOp' a) where
   prt i = \case
-    AbsLatteMalinowe.LTH _ -> prPrec i 0 (concatD [doc (showString "<")])
+    AbsLatteMalinowe.LT _ -> prPrec i 0 (concatD [doc (showString "<")])
     AbsLatteMalinowe.LE _ -> prPrec i 0 (concatD [doc (showString "<=")])
-    AbsLatteMalinowe.GTH _ -> prPrec i 0 (concatD [doc (showString ">")])
+    AbsLatteMalinowe.GT _ -> prPrec i 0 (concatD [doc (showString ">")])
     AbsLatteMalinowe.GE _ -> prPrec i 0 (concatD [doc (showString ">=")])
-    AbsLatteMalinowe.EQU _ -> prPrec i 0 (concatD [doc (showString "==")])
+    AbsLatteMalinowe.EQ _ -> prPrec i 0 (concatD [doc (showString "==")])
     AbsLatteMalinowe.NE _ -> prPrec i 0 (concatD [doc (showString "!=")])
