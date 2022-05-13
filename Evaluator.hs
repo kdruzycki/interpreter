@@ -2,7 +2,6 @@ module Evaluator where
 
 import qualified Data.Map as Map
 import Control.Monad.Reader
-import Control.Monad.State
 import Prelude
 
 import Globals
@@ -10,6 +9,9 @@ import AbsLatteMalinowe
 
 -- TODO zwracanie Result, zamiast Val, żeby można było dać ulubiony błąd wszystkich, czyli dzielenie przez zero
 -- TODO można usunąć E np. EVar -> Var, bo brzydko jest
+
+evalExpr :: Expr' a -> IdentEnv -> Val
+evalExpr e = runReader (eval e)
 
 eval :: Expr' a -> Reader IdentEnv Val
 eval e = case e of

@@ -9,7 +9,7 @@ import Control.Monad.Trans.Writer.Lazy
 
 import Utils
 import Globals
-import Evaluator (eval)
+import Evaluator (evalExpr)
 import AbsLatteMalinowe
 
 interpret :: Show a => Program' a -> Result
@@ -37,20 +37,35 @@ execBlock b = putStr $ (evalState (execWriterT (execBlockM b)) Map.empty) "\n"
 execBlockM :: Block' a -> WriterT ShowS (State IdentEnv) ()
 execBlockM (Block _ stmts) = processSeq execStmtM stmts
 
+-- TODO loops
+
 execStmtM :: Stmt' a -> WriterT ShowS (State IdentEnv) ()
 execStmtM s = case s of
-  BStmt _ block -> execBlockM block
-  -- Cond _ expr block -> if (fromVBool $ eval expr) then execBlockM block else return ()
-  -- AbsLatteMalinowe.CondElse _ expr block1 block2 -> failure x
+  BStmt _ b -> execBlockM b
+  Cond _ e b -> do
+    v <- gets $ evalExpr e
+    when (fromVBool v) $ execBlockM b
+  CondElse _ e b1 b2-> do
+    v <- gets $ evalExpr e
+    if (fromVBool v)
+      then execBlockM b1
+      else execBlockM b2
   OrdStmt _ os -> case os of
+    Empty _ -> return ()
+    SExp _ e -> (gets $ evalExpr e) >> (return ())
     Decl _ type_ items -> processSeq (declVarM type_) items
     Print _ expr -> printM expr
-    _ -> return ()
-  _ -> return ()
+    Ass _ ident expr -> assM ident expr
+    Incr _ ident -> mapVarIntM ident (+1)
+    Decr _ ident -> mapVarIntM ident (+(-1))
+    -- AbsLatteMalinowe.While _ expr lblock -> failure x
+    -- AbsLatteMalinowe.For _ ident expr1 expr2 lblock -> failure x
+    -- AbsLatteMalinowe.Ret _ expr -> failure x
+    -- AbsLatteMalinowe.VRet _ -> failure x
   
 printM :: Expr' a -> WriterT ShowS (State IdentEnv) ()
-printM expr = do
-  v <- gets $ runReader (eval expr)
+printM e = do
+  v <- gets $ evalExpr e
   tell $ case v of
     VBool _ -> shows $ fromVBool v
     VInt _ -> shows $ fromVInt v
@@ -58,42 +73,21 @@ printM expr = do
 
 declVarM :: Type' a -> Item' a -> WriterT ShowS (State IdentEnv) ()
 declVarM type_ item = case item of
-  NoInit _ ident    -> (return $ defaultVal type_)    >>= (decl ident)
-  Init _ ident expr -> (gets $ runReader (eval expr)) >>= (decl ident)
-  where
-    decl :: Ident -> Val -> WriterT ShowS (State IdentEnv) ()
-    decl i v = modify $ Map.insert i v
+  NoInit _ i -> saveVarM i $ defaultVal type_
+  Init _ i e -> assM i e
 
--- declVarM :: Type' a -> Item' a -> WriterT ShowS (State IdentEnv) ()
--- declVarM type_ item = case item of 
---   NoInit _ ident    -> decl (return $ defaultVal type_) ident
---   Init _ ident expr -> decl (gets $ runReader (eval expr)) ident
---   where
---     decl :: WriterT ShowS (State IdentEnv) () -> Ident -> WriterT ShowS (State IdentEnv) ()
---     decl m i = do
---       v <- m
---       modify $ Map.insert i v
+assM :: Ident -> Expr' a -> WriterT ShowS (State IdentEnv) ()
+assM i e = do
+  v <- gets $ evalExpr e
+  saveVarM i v
 
--- transStmt :: Show a => AbsLatteMalinowe.Stmt' a -> Result
--- transStmt x = case x of
---   AbsLatteMalinowe.BStmt _ block -> failure x
---   AbsLatteMalinowe.Cond _ expr block -> failure x
---   AbsLatteMalinowe.CondElse _ expr block1 block2 -> failure x
---   AbsLatteMalinowe.OrdStmt _ ordstmt -> failure x
+mapVarIntM :: Ident -> (Integer -> Integer) -> WriterT ShowS (State IdentEnv) ()
+mapVarIntM i f = do
+  v <- gets $ Map.findWithDefault (VInt 0) i
+  saveVarM i v
 
--- transOrdStmt :: Show a => AbsLatteMalinowe.OrdStmt' a -> Result
--- transOrdStmt x = case x of
---   AbsLatteMalinowe.While _ expr lblock -> failure x
---   AbsLatteMalinowe.For _ ident expr1 expr2 lblock -> failure x
---   AbsLatteMalinowe.Empty _ -> failure x
---   AbsLatteMalinowe.Decl _ type_ items -> failure x
---   AbsLatteMalinowe.Ass _ ident expr -> failure x
---   AbsLatteMalinowe.Incr _ ident -> failure x
---   AbsLatteMalinowe.Decr _ ident -> failure x
---   AbsLatteMalinowe.Ret _ expr -> failure x
---   AbsLatteMalinowe.VRet _ -> failure x
---   AbsLatteMalinowe.Print _ expr -> failure x
---   AbsLatteMalinowe.SExp _ expr -> failure x
+saveVarM :: Ident -> Val -> WriterT ShowS (State IdentEnv) ()
+saveVarM i v = modify $ Map.insert i v
 
 -- transItem :: Show a => AbsLatteMalinowe.Item' a -> Result
 -- transItem x = case x of
