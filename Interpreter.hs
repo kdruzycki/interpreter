@@ -57,6 +57,7 @@ execStmtM s = case s of
   Ass _ ident expr -> assM ident expr
   Incr _ ident -> mapVarIntM ident (+1)
   Decr _ ident -> mapVarIntM ident (+(-1))
+  _ -> return ()
   -- AbsLatteMalinowe.While _ expr lblock -> failure x
   -- AbsLatteMalinowe.For _ ident expr1 expr2 lblock -> failure x
   -- AbsLatteMalinowe.Ret _ expr -> failure x

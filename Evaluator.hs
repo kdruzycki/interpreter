@@ -2,7 +2,7 @@ module Evaluator where
 
 import qualified Data.Map as Map
 import Control.Monad.Reader
-import Prelude
+import Prelude hiding (EQ, GT, LT)
 
 import Globals
 import AbsLatteMalinowe
