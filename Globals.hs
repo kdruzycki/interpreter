@@ -10,8 +10,11 @@ data Val
   | VBool Bool
   | VVoid
   deriving (Show)
-
-type IdentEnv = Map.Map Ident Val
+  
+-- pamietamy tylko identyfikatory, nie pamiętamy typów, bo typechecker
+type VarEnv = Map.Map Ident Val
+type FnSgn a = ([Ident], Block' a)
+type FnEnv a = Map.Map Ident (FnSgn a)
 
 type Err = Either String
 type Result = Err Val

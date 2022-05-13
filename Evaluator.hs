@@ -9,10 +9,10 @@ import AbsLatteMalinowe
 
 -- TODO zwracanie Result, zamiast Val, żeby można było dać ulubiony błąd wszystkich, czyli dzielenie przez zero
 
-evalExpr :: Expr' a -> IdentEnv -> Val
+evalExpr :: Expr' a -> VarEnv -> Val
 evalExpr e = runReader (eval e)
 
-eval :: Expr' a -> Reader IdentEnv Val
+eval :: Expr' a -> Reader VarEnv Val
 eval e = case e of
   LitInt _ n -> return $ VInt n
   LitTrue _ -> return $ VBool True
@@ -28,7 +28,7 @@ eval e = case e of
   Mul _ e1 op e2 -> mul op <$> (eval e1) <*> (eval e2)
   Add _ e1 op e2 -> add op <$> (eval e1) <*> (eval e2)
 
-var :: Ident -> Reader IdentEnv Val
+var :: Ident -> Reader VarEnv Val
 var ident = asks $ Map.findWithDefault (VBool False) ident
 
 neg :: Val -> Val
@@ -68,9 +68,9 @@ rel op v1 v2 = case v1 of
   where
     transRelOp :: Ord a1 => RelOp' a2 -> a1 -> a1 -> Bool
     transRelOp op = case op of
-      NE _ -> (/=)
-      EQ _ -> (==)
-      LE _ -> (<=)
-      GE _ -> (>=)
-      GT _ -> (>)
-      LT _ -> (<)
+      AbsLatteMalinowe.NE _ -> (/=)
+      AbsLatteMalinowe.EQ _ -> (==)
+      AbsLatteMalinowe.LE _ -> (<=)
+      AbsLatteMalinowe.GE _ -> (>=)
+      AbsLatteMalinowe.GT _ -> (>)
+      AbsLatteMalinowe.LT _ -> (<)
