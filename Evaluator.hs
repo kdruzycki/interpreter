@@ -5,9 +5,8 @@ import Control.Monad.Reader
 import Prelude hiding (EQ, GT, LT)
 
 import Globals
+import Functions (execFnM)
 import AbsLatteMalinowe
-
--- TODO zwracanie Result, zamiast Val, żeby można było dać ulubiony błąd wszystkich, czyli dzielenie przez zero
 
 evalExpr :: Expr' a -> VarEnv -> Val
 evalExpr e = runReader (eval e)

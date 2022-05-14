@@ -2,8 +2,8 @@ module Statements where
 
 import qualified Data.Map as Map
 import Control.Monad.Reader
-import Control.Monad.State.Lazy
-import Control.Monad.Trans.Writer.Lazy
+import Control.Monad.State.Strict
+import Control.Monad.Trans.Writer.Strict
 
 import Utils
 import Globals
@@ -12,13 +12,11 @@ import Evaluator (evalExpr)
 
 type StmtsInterpreter = StateT VarEnv (OutputWriter) ()
 
-execBlock :: Block' a -> OutputWriter ()
-execBlock b = evalStateT (execBlockM b) Map.empty
+execBlock :: Block' a -> VarEnv -> OutputWriter ()
+execBlock b varEnv = evalStateT (execBlockM b) varEnv
 
 execBlockM :: Block' a -> StmtsInterpreter
 execBlockM (Block _ stmts) = processSeq execStmtM stmts
-
--- TODO loops
 
 execStmtM :: Stmt' a -> StmtsInterpreter
 execStmtM s = case s of

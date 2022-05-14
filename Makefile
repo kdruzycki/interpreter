@@ -27,7 +27,7 @@ AbsLatteMalinowe.hs LexLatteMalinowe.x ParLatteMalinowe.y PrintLatteMalinowe.hs 
 %.hs : %.x
 	${ALEX} ${ALEX_OPTS} $<
 
-Main : AbsLatteMalinowe.hs LexLatteMalinowe.hs ParLatteMalinowe.hs PrintLatteMalinowe.hs Utils.hs Globals.hs Evaluator.hs Statements.hs Interpreter.hs Main.hs
+Main : AbsLatteMalinowe.hs LexLatteMalinowe.hs ParLatteMalinowe.hs PrintLatteMalinowe.hs Utils.hs Globals.hs Evaluator.hs Statements.hs Functions.hs Main.hs
 	${GHC} ${GHC_OPTS} -o interpreter $@
 
 # Rules for cleaning generated files.

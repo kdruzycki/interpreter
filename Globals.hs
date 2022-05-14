@@ -1,7 +1,7 @@
 module Globals where
 
 import qualified Data.Map as Map
-import Control.Monad.Trans.Writer.Lazy
+import Control.Monad.Trans.Writer.Strict
 
 import AbsLatteMalinowe
 
@@ -11,15 +11,11 @@ data Val
   | VBool Bool
   | VVoid
   deriving (Show)
-  
--- pamietamy tylko identyfikatory, nie pamiętamy typów, bo typechecker
-type VarEnv = Map.Map Ident Val
-type FnSgn a = ([Ident], Block' a)
-type FnEnv a = Map.Map Ident (FnSgn a)
 
 type Err = Either String
 type Result = Err Val
 
+type VarEnv = Map.Map Ident Val
 type OutputWriter = Writer ShowS
 
 failure :: Show a => a -> Result
