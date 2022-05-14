@@ -1,6 +1,7 @@
 module Globals where
 
 import qualified Data.Map as Map
+import Control.Monad.Trans.Writer.Lazy
 
 import AbsLatteMalinowe
 
@@ -18,6 +19,8 @@ type FnEnv a = Map.Map Ident (FnSgn a)
 
 type Err = Either String
 type Result = Err Val
+
+type OutputWriter = Writer ShowS
 
 failure :: Show a => a -> Result
 failure x = Left $ "Undefined case: " ++ show x

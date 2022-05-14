@@ -49,9 +49,9 @@ run v s =
       putStrLn "\nParse Successful!"
       showTree v tree
       -- typeCheck tree
-      case (interpret tree) of
+      case (execProgram tree) of
         Left err -> putStrLn $ showString "Runtime error: " err
-        _ -> return ()
+        Right out -> putStrLn $ out
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]

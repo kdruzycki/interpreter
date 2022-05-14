@@ -10,15 +10,17 @@ import Globals
 import AbsLatteMalinowe
 import Evaluator (evalExpr)
 
-execBlock :: Block' a -> ShowS
-execBlock b = (evalState (execWriterT (execBlockM b)) Map.empty)
+type StmtsInterpreter = StateT VarEnv (OutputWriter) ()
 
-execBlockM :: Block' a -> WriterT ShowS (State VarEnv) ()
+execBlock :: Block' a -> OutputWriter ()
+execBlock b = evalStateT (execBlockM b) Map.empty
+
+execBlockM :: Block' a -> StmtsInterpreter
 execBlockM (Block _ stmts) = processSeq execStmtM stmts
 
 -- TODO loops
 
-execStmtM :: Stmt' a -> WriterT ShowS (State VarEnv) ()
+execStmtM :: Stmt' a -> StmtsInterpreter
 execStmtM s = case s of
   BStmt _ b -> execBlockM b
   Cond _ e b -> condM e b
@@ -38,42 +40,42 @@ execStmtM s = case s of
   -- AbsLatteMalinowe.Continue _ -> failure x
   _ -> return ()
   
-printM :: Expr' a -> WriterT ShowS (State VarEnv) ()
+printM :: Expr' a -> StmtsInterpreter
 printM e = do
   v <- gets $ evalExpr e
-  tell $ case v of
+  lift $ tell $ case v of
     VBool _ -> shows $ fromVBool v
     VInt _ -> shows $ fromVInt v
     VStr _ -> showString $ fromVStr v
 
-declVarM :: Type' a -> Item' a -> WriterT ShowS (State VarEnv) ()
+declVarM :: Type' a -> Item' a -> StmtsInterpreter
 declVarM type_ item = case item of
   NoInit _ i -> saveVarM i $ defaultVal type_
   Init _ i e -> assM i e
 
-assM :: Ident -> Expr' a -> WriterT ShowS (State VarEnv) ()
+assM :: Ident -> Expr' a -> StmtsInterpreter
 assM i e = do
   v <- gets $ evalExpr e
   saveVarM i v
 
-mapVarIntM :: Ident -> (Integer -> Integer) -> WriterT ShowS (State VarEnv) ()
+mapVarIntM :: Ident -> (Integer -> Integer) -> StmtsInterpreter
 mapVarIntM i f = do
   v <- gets $ Map.findWithDefault (VInt 0) i
   saveVarM i v
 
-saveVarM :: Ident -> Val -> WriterT ShowS (State VarEnv) ()
+saveVarM :: Ident -> Val -> StmtsInterpreter
 saveVarM i v = modify $ Map.insert i v
 
-condElseM :: Expr' a1 -> Block' a2 -> Block' a2 -> WriterT ShowS (State VarEnv) ()
+condElseM :: Expr' a1 -> Block' a2 -> Block' a2 -> StmtsInterpreter
 condElseM e b1 b2 = condDoM e (execBlockM b1) (execBlockM b2)
 
-condM :: Expr' a1 -> Block' a2 -> WriterT ShowS (State VarEnv) ()
+condM :: Expr' a1 -> Block' a2 -> StmtsInterpreter
 condM e b = condDoM e (execBlockM b) (return ())
 
-whileM :: Expr' a1 -> Block' a2 -> WriterT ShowS (State VarEnv) ()
+whileM :: Expr' a1 -> Block' a2 -> StmtsInterpreter
 whileM e b = condDoM e (execBlockM b >> whileM e b) (return ())
 
-condDoM :: Expr' a1 -> WriterT ShowS (State VarEnv) () -> WriterT ShowS (State VarEnv) () -> WriterT ShowS (State VarEnv) ()
+condDoM :: Expr' a1 -> StmtsInterpreter -> StmtsInterpreter -> StmtsInterpreter
 condDoM expr m1 m2 = do
   v <- gets $ evalExpr expr
   if (fromVBool v)
