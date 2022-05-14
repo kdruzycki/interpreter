@@ -5,16 +5,6 @@
 module Main where
 
 import Prelude
-  ( ($), (.)
-  , Either(..)
-  , Int, (>)
-  , String, (++), concat, unlines
-  , Show, show
-  , ShowS, showString
-  , IO, (>>), (>>=), mapM_, putStrLn
-  , FilePath
-  , getContents, readFile
-  )
 import Data.Either ( isLeft, fromLeft )
 import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
@@ -49,9 +39,9 @@ run v s =
       putStrLn "\nParse Successful!"
       showTree v tree
       -- typeCheck tree
-      case (execProgram tree) of
+      case (programOutput tree) of
         Left err -> putStrLn $ showString "Runtime error: " err
-        Right out -> putStrLn $ out
+        Right out -> putStr $ out
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]

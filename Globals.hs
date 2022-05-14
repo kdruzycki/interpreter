@@ -15,6 +15,10 @@ data Val
 type Err = Either String
 type Result = Err Val
 
+-- pamietamy tylko identyfikatory, nie pamiętamy typów, bo typechecker
+type FnSgn a = ([Ident], Block' a)
+type FnEnv a = Map.Map Ident (FnSgn a)
+
 type VarEnv = Map.Map Ident Val
 type OutputWriter = Writer ShowS
 

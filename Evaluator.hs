@@ -5,20 +5,22 @@ import Control.Monad.Reader
 import Prelude hiding (EQ, GT, LT)
 
 import Globals
-import Functions (execFnM)
+import Functions (runFnM)
 import AbsLatteMalinowe
 
-evalExpr :: Expr' a -> VarEnv -> Val
-evalExpr e = runReader (eval e)
+evalExpr :: Expr' a -> VarEnv -> ReaderT (FnEnv a) OutputWriter Val
+evalExpr e varEnv = runReaderT (eval e) varEnv
 
-eval :: Expr' a -> Reader VarEnv Val
+eval :: Expr' a -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
 eval e = case e of
   LitInt _ n -> return $ VInt n
   LitTrue _ -> return $ VBool True
   LitFalse _ -> return $ VBool False
   LitString _ s -> return $ VStr s
   Var _ ident -> var ident 
-  App _ ident es -> return $ VStr "TODO" -- to w module dot. funkcji
+  App _ ident es -> do
+    args <- mapM eval es
+    lift $ app ident args
   Neg _ e -> neg <$> (eval e)
   Not _ e -> not' <$> (eval e)
   And _ e1 e2 -> and' <$> (eval e1) <*> (eval e2)
@@ -27,8 +29,14 @@ eval e = case e of
   Mul _ e1 op e2 -> mul op <$> (eval e1) <*> (eval e2)
   Add _ e1 op e2 -> add op <$> (eval e1) <*> (eval e2)
 
-var :: Ident -> Reader VarEnv Val
+var :: Ident -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
 var ident = asks $ Map.findWithDefault (VBool False) ident
+
+app :: Ident -> [Val] -> ReaderT (FnEnv a) OutputWriter Val
+app ident args = do
+  maybeFn <- asks $ Map.lookup ident
+  mapM (\f -> runFnM f args) maybeFn
+  return $ VStr "Returning functions TODO"
 
 neg :: Val -> Val
 neg v = VInt $ - (fromVInt v)

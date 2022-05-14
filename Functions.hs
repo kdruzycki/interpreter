@@ -13,34 +13,29 @@ import AbsLatteMalinowe
 import {-# SOURCE #-} Statements (execBlock)
 
 -- TODO
--- 1. Zamienić State na Writer w tym module
--- 2. Przekazywać fnEnv do Statements i zrobić tam reader tego
 -- 3. Zrobić reader fnEnv w Ewaluatorze i w ten sposób wykonać tam execFnM
 
--- pamietamy tylko identyfikatory, nie pamiętamy typów, bo typechecker
-type FnSgn a = ([Ident], Block' a)
-type FnEnv a = Map.Map Ident (FnSgn a)
-type FnsInterpreter a = StateT (FnEnv a) (OutputWriter) ()
+programOutput :: Program' a -> Either String String
+programOutput p = return $ (execWriter $ execProgram p) "\n"
 
-execProgram :: Program' a -> Either String String
-execProgram p = Right $ (execWriter (evalStateT (execProgramM p) Map.empty)) "\n"
+execProgram :: Program' a -> OutputWriter ()
+execProgram p = runReaderT execProgramM (createFnEnv p)
 
--- z tego robimy writer do fnEnva (czyli WriterT (FnEnv a) (OutuptWriter) ())
-execProgramM :: Program' a -> FnsInterpreter a
-execProgramM (Program _ fs) = do
-  processSeq saveFnM fs
-  main <- gets $ Map.lookup (Ident "main")
-  mapM_ (\fnSgn -> execFnM fnSgn []) main
+execProgramM :: ReaderT (FnEnv a) OutputWriter ()
+execProgramM = do
+  main <- asks $ Map.lookup (Ident "main")
+  mapM_ (\fnSgn -> runFnM fnSgn []) main
 
--- z tego też
-saveFnM :: TopDef' a -> FnsInterpreter a
-saveFnM (FnDef _ _ ident args block) = 
-  modify $ Map.insert ident (map argIdent args, block)
-  where
-    argIdent :: Arg' a -> Ident
-    argIdent (Arg _ _ ident) = ident
-
--- z tego robimy reader FnEnva
-execFnM :: FnSgn a -> [Val] -> FnsInterpreter a
-execFnM (argIdents, b) argVals = lift $ execBlock b varEnv
+runFnM :: FnSgn a -> [Val] -> ReaderT (FnEnv a) OutputWriter ()
+runFnM (argIdents, b) argVals = execBlock b varEnv
   where varEnv = Map.fromList $ zip argIdents argVals
+
+createFnEnv :: Program' a -> FnEnv a
+createFnEnv (Program _ fnDefs) = Map.fromList $ map fnEnvEntry fnDefs
+  where
+    fnEnvEntry :: TopDef' a -> (Ident, (FnSgn a))
+    fnEnvEntry (FnDef _ _ ident args block) = 
+      (ident, (map argIdent args, block))
+      where
+        argIdent :: Arg' a -> Ident
+        argIdent (Arg _ _ ident) = ident
