@@ -3,9 +3,9 @@ string hello(string who) {
   print("This should not be printed.");
 }
 int sum(int a, int b) {
-  //{
+  {
     a = a + b;
-  //};
+  };
   return a;
   a = 0;
 }
@@ -15,8 +15,8 @@ void main() {
   print(neg(false));
 }
 bool neg(bool b) {
-  //{
-  //  return !b;
-  //};
+  {
+    return !b;
+  };
   return b;
 }

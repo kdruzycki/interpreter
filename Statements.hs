@@ -15,22 +15,23 @@ type StmtsInterpreter a = StateT VarEnv (ReaderT (FnEnv a) OutputWriter)
 
 execFnBlock :: Block' a -> [(Ident, Val)] -> ReaderT (FnEnv a) OutputWriter Val
 execFnBlock b args = do
-  retval <- evalStateT (execBlockM b) fnEnv
+  retval <- evalStateT (execBlockM b) varEnv
   return $ fromMaybe VVoid retval
-  where fnEnv = (-1, Map.fromList $ map (mapSnd (\a -> [(0, a)])) args)
+  where varEnv = (-1, Map.fromList $ map (mapSnd (\a -> [(0, a)])) args)
 
 execBlockM :: Block' a -> (StmtsInterpreter a) (Maybe Val)
 execBlockM (Block _ stmts) = do
   modify $ mapFst (+1)
-  -- processSeq execStmtM stmts
   ret <- untilJust $ map execStmtM stmts
   lvl <- gets $ fst
   modify $ mapFst (+(-1))
-  modify $ mapSnd $ Map.map droplLocal
+  modify $ mapSnd $ Map.map $ dropLocal lvl
   return ret
     where
-    droplLocal ((lvl, _):lvls) = lvls
-    droplLocal lvls = lvls
+      dropLocal :: ScopeLevel -> [(ScopeLevel, Val)] -> [(ScopeLevel, Val)]
+      dropLocal scopelvl lvls = case lvls of
+        [] -> []
+        _ -> if (fst $ head lvls) == scopelvl then tail lvls else lvls
 
 execStmtM :: Stmt' a -> (StmtsInterpreter a) (Maybe Val)
 execStmtM s = case s of
@@ -50,11 +51,11 @@ execStmtM s = case s of
       Incr _ ident -> updateVarM ident (\v -> VInt $ (fromVInt v) + 1)
       Decr _ ident -> updateVarM ident (\v -> VInt $ (fromVInt v) - 1)
       -- AbsLatteMalinowe.For _ ident expr1 expr2 block -> failure x
-      -- AbsLatteMalinowe.Break _ -> failure x
+      -- Break _ -> failure x
       -- AbsLatteMalinowe.Continue _ -> failure x
       _ -> return ()
     return Nothing
-  
+
 -- TODO użycie listen
 printM :: Expr' a -> (StmtsInterpreter a) ()
 printM e = do
@@ -86,13 +87,6 @@ updateVarM ident f = do
   where
     updateCurrLevelM :: [(ScopeLevel, Val)] -> [(ScopeLevel, Val)]
     updateCurrLevelM (lvl:lvls) = mapSnd f lvl : lvls
-
--- each subscope adds another level of a variable
-varLevelsM :: Ident -> (StmtsInterpreter a) [(ScopeLevel, Val)]
-varLevelsM ident = gets $ (Map.findWithDefault [] ident) . snd
-
-updateLevelsM :: Ident -> [(ScopeLevel, Val)] -> (StmtsInterpreter a) ()
-updateLevelsM ident lvls = modify $ mapSnd $ Map.insert ident lvls
 
 alterLevelsM :: Ident -> ([(ScopeLevel, Val)] -> [(ScopeLevel, Val)]) -> (StmtsInterpreter a) ()
 alterLevelsM ident modifier = modify $ mapSnd $ Map.alter modifier' ident

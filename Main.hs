@@ -42,7 +42,7 @@ run v s =
       -- typeCheck tree
       let program = execProgram tree
       putStr $ snd program "\n"
-      putStrLn $ showString "Program resulted with: " $ show $ fst program
+      -- putStrLn $ showString "Program resulted with: " $ show $ fst program
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]

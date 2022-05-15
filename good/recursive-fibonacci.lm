@@ -9,5 +9,5 @@ int fibo(int a) {
 }
 
 void main() {
-  print(fibo(7));
+  print(fibo(10));
 }
