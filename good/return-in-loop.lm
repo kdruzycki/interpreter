@@ -17,4 +17,10 @@ void twice() {
 void main () {
   once();
   twice();
+  for (i from 1 to 10) {
+    print("three times");
+    if (i == 3) {
+      return;
+    }
+  }
 }
