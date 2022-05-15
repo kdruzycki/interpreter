@@ -1,6 +1,7 @@
 module Evaluator where
 
 import qualified Data.Map as Map
+import Data.Maybe
 import Control.Monad.Reader
 import Prelude hiding (EQ, GT, LT)
 
@@ -31,16 +32,13 @@ eval e = case e of
 
 var :: Ident -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
 var ident = do
-  varlevels <- asks $ (Map.lookup ident) . snd
-  case varlevels of
-    Just lvls -> return $ snd $ head $ lvls
-    Nothing -> return $ VBool False
+  varlvls <- asks $ (Map.lookup ident) . snd
+  return $ snd $ head $ fromJust varlvls
 
 app :: Ident -> [Val] -> ReaderT (FnEnv a) OutputWriter Val
 app ident args = do
   maybeFn <- asks $ Map.lookup ident
-  mapM (\f -> runFnM f args) maybeFn
-  return $ VStr "Returning functions TODO"
+  runFnM (fromJust maybeFn) args
 
 neg :: Val -> Val
 neg v = VInt $ - (fromVInt v)

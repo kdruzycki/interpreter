@@ -13,6 +13,7 @@ import AbsLatteMalinowe
 import {-# SOURCE #-} Statements (execFnBlock)
 
 -- TODO
+-- funkcje zwracające wartość
 -- pętla for bez read only
 
 -- read only bedzie w typeCheckerze
@@ -24,6 +25,8 @@ import {-# SOURCE #-} Statements (execFnBlock)
 -- deklarację funkcji można przesłonić deklaracją zmiennej (sic!)
 -- w szczególności jeśli deklaracja funkcji jest przesłonięta deklaracją zmiennej, to nie można wykonać App nazwa_funkcji
 -- czy można przesłaniać argumenty funkcji??
+-- próba wypisania voida / funkcji void
+-- próba wykonania operacji na voidzie
 
 execProgram :: Program' a -> ((), ShowS)
 execProgram p = runWriter $ runReaderT execProgramM (createFnEnv p)
@@ -33,7 +36,7 @@ execProgramM = do
   main <- asks $ Map.lookup (Ident "main")
   mapM_ (\fnSgn -> runFnM fnSgn []) main
 
-runFnM :: FnSgn a -> [Val] -> ReaderT (FnEnv a) OutputWriter ()
+runFnM :: FnSgn a -> [Val] -> ReaderT (FnEnv a) OutputWriter Val
 runFnM (argIdents, b) argVals = execFnBlock b $ zip argIdents argVals
 
 createFnEnv :: Program' a -> FnEnv a

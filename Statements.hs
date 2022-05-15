@@ -1,6 +1,7 @@
 module Statements where
 
 import qualified Data.Map as Map
+import Data.Maybe
 import Control.Monad.Reader
 import Control.Monad.State.Strict
 import Control.Monad.Trans.Writer.Lazy
@@ -12,24 +13,27 @@ import Evaluator (evalExpr)
 
 type StmtsInterpreter a = StateT VarEnv (ReaderT (FnEnv a) (OutputWriter))
 
-execFnBlock :: Block' a -> [(Ident, Val)] -> ReaderT (FnEnv a) (OutputWriter) ()
-execFnBlock b args = evalStateT (execBlockM b) fnEnv
-  where fnEnv = (-1, Map.fromList $ map (chgSnd (\a -> [(0, a)])) args)
+execFnBlock :: Block' a -> [(Ident, Val)] -> ReaderT (FnEnv a) (OutputWriter) Val
+execFnBlock b args = do
+  retval <- evalStateT (execBlockM b) fnEnv
+  return $ fromMaybe VVoid retval
+  where fnEnv = (-1, Map.fromList $ map (mapSnd (\a -> [(0, a)])) args)
 
-execBlockM :: Block' a -> (StmtsInterpreter a) ()
+execBlockM :: Block' a -> (StmtsInterpreter a) (Maybe Val)
 execBlockM (Block _ stmts) = do
-  modify $ chgFst (+1)
+  modify $ mapFst (+1)
   processSeq execStmtM stmts
   lvl <- gets $ fst
-  modify $ chgFst (+(-1))
-  modify $ chgSnd $ Map.map droplLocal
+  modify $ mapFst (+(-1))
+  modify $ mapSnd $ Map.map droplLocal
+  return Nothing
     where
     droplLocal ((lvl, _):lvls) = lvls
     droplLocal lvls = lvls
 
 execStmtM :: Stmt' a -> (StmtsInterpreter a) ()
 execStmtM s = case s of
-  BStmt _ b -> execBlockM b
+  BStmt _ b -> (execBlockM b) >> (return ())
   Cond _ e b -> condM e b
   CondElse _ e b1 b2 -> condElseM e b1 b2
   Empty _ -> return ()
@@ -54,18 +58,17 @@ printM e = do
     VBool _ -> shows $ fromVBool v
     VInt _ -> shows $ fromVInt v
     VStr _ -> showString $ fromVStr v
+    VVoid -> showString "<void>"
 
 declVarM :: Type' a -> Item' a -> (StmtsInterpreter a) ()
 declVarM type_ item = do
   scopelvl <- gets $ fst
   case item of
     NoInit _ ident -> do
-      varlevels <- varLevelsM ident
-      updateLevelsM ident $ (scopelvl, defaultVal type_) : varlevels
+      alterLevelsM ident $ (:) (scopelvl, defaultVal type_)
     Init _ ident expr -> do
-      varlevels <- varLevelsM ident
       v <- evalExprM expr
-      updateLevelsM ident $ (scopelvl, v) : varlevels
+      alterLevelsM ident $ (:) (scopelvl, v)
 
 assM :: Ident -> Expr' a -> (StmtsInterpreter a) ()
 assM i e = do
@@ -74,17 +77,23 @@ assM i e = do
 
 updateVarM :: Ident -> (Val -> Val) -> (StmtsInterpreter a) ()
 updateVarM ident f = do
-  varlevels <- gets $ (Map.lookup ident) . snd
-  mapM_ updateCurrLevelM varlevels where
-    updateCurrLevelM :: [(ScopeLevel, Val)] -> (StmtsInterpreter a) ()
-    updateCurrLevelM (lvl:lvls) = updateLevelsM ident $ chgSnd f lvl : lvls
+  alterLevelsM ident updateCurrLevelM
+  where
+    updateCurrLevelM :: [(ScopeLevel, Val)] -> [(ScopeLevel, Val)]
+    updateCurrLevelM (lvl:lvls) = mapSnd f lvl : lvls
 
 -- each subscope adds another level of a variable
 varLevelsM :: Ident -> (StmtsInterpreter a) [(ScopeLevel, Val)]
 varLevelsM ident = gets $ (Map.findWithDefault [] ident) . snd
 
 updateLevelsM :: Ident -> [(ScopeLevel, Val)] -> (StmtsInterpreter a) ()
-updateLevelsM ident lvls = modify $ chgSnd $ Map.insert ident lvls
+updateLevelsM ident lvls = modify $ mapSnd $ Map.insert ident lvls
+
+alterLevelsM :: Ident -> ([(ScopeLevel, Val)] -> [(ScopeLevel, Val)]) -> (StmtsInterpreter a) ()
+alterLevelsM ident modifier = modify $ mapSnd $ Map.alter modifier' ident
+  where
+    modifier' :: Maybe [(ScopeLevel, Val)] -> Maybe [(ScopeLevel, Val)]
+    modifier' list = return $ modifier $ fromMaybe [] list
 
 condElseM :: Expr' a -> Block' a -> Block' a -> (StmtsInterpreter a) ()
 condElseM e b1 b2 = condDoM e (execBlockM b1) (execBlockM b2)
@@ -95,12 +104,12 @@ condM e b = condDoM e (execBlockM b) (return ())
 whileM :: Expr' a -> Block' a -> (StmtsInterpreter a) ()
 whileM e b = condDoM e (execBlockM b >> whileM e b) (return ())
 
-condDoM :: Expr' a -> (StmtsInterpreter a) () -> (StmtsInterpreter a) () -> (StmtsInterpreter a) ()
+condDoM :: Expr' a -> (StmtsInterpreter a) b -> (StmtsInterpreter a) c -> (StmtsInterpreter a) ()
 condDoM e m1 m2 = do
   v <- evalExprM e
   if (fromVBool v)
-    then m1
-    else m2
+    then m1 >> (return ())
+    else m2 >> (return ())
 
 evalExprM :: Expr' a -> (StmtsInterpreter a) Val
 evalExprM e = do
