@@ -9,7 +9,7 @@ import Control.Monad.Trans.Writer.Lazy
 import Utils
 import Globals
 import AbsLatteMalinowe
-import Evaluator (evalExpr)
+import qualified Evaluator (evalExprM)
 
 type StmtsInterpreter a = StateT VarEnv (ReaderT (FnEnv a) OutputWriter)
 
@@ -39,6 +39,7 @@ execStmtM s = case s of
   Cond _ expr block -> condM expr block
   CondElse _ expr b1 b2 -> condElseM expr b1 b2
   While _ expr block -> whileM expr block
+  For _ ident e1 e2 block -> forLoopM ident e1 e2 block
   Ret _ expr -> evalExprM expr >>= (\v -> return $ return v)
   VRet _ -> return $ return VVoid
   _ -> do
@@ -50,11 +51,28 @@ execStmtM s = case s of
       Ass _ ident expr -> assM ident expr
       Incr _ ident -> updateVarM ident (\v -> VInt $ (fromVInt v) + 1)
       Decr _ ident -> updateVarM ident (\v -> VInt $ (fromVInt v) - 1)
-      -- AbsLatteMalinowe.For _ ident expr1 expr2 block -> failure x
       -- Break _ -> failure x
       -- AbsLatteMalinowe.Continue _ -> failure x
       _ -> return ()
     return Nothing
+
+forLoopM :: Ident -> Expr' a -> Expr' a -> Block' a -> (StmtsInterpreter a) (Maybe Val)
+forLoopM ident e1 e2 b = do
+  v1 <- fmap fromVInt $ evalExprM e1
+  v2 <- fmap fromVInt $ evalExprM e2
+  scopelvl <- gets $ fst
+  forLoopM scopelvl ident v1 v2 (v1 <= v2) b where
+    forLoopM :: ScopeLevel -> Ident -> Integer -> Integer -> Bool -> Block' a -> (StmtsInterpreter a) (Maybe Val)
+  --   -- trzeba w każdej iteracji zapisywać na nowo, bo blok je kasuje :P
+    forLoopM lvl i curr end asc block = do
+      if (asc && curr <= end || not asc && curr >= end)
+        then do
+          alterLevelsM ident $ (:) (lvl + 1, VInt curr)
+          ret <- execBlockM block
+          if (isJust ret)
+            then (return ret)
+            else forLoopM lvl i (if asc then curr + 1 else curr - 1) end asc block
+        else return Nothing
 
 -- TODO użycie listen
 printM :: Expr' a -> (StmtsInterpreter a) ()
@@ -77,22 +95,19 @@ declVarM type_ item = do
       alterLevelsM ident $ (:) (scopelvl, v)
 
 assM :: Ident -> Expr' a -> (StmtsInterpreter a) ()
-assM i e = do
+assM ident e = do
   v <- evalExprM e
-  updateVarM i (const v)
+  updateVarM ident (const v)
 
 updateVarM :: Ident -> (Val -> Val) -> (StmtsInterpreter a) ()
-updateVarM ident f = do
-  alterLevelsM ident updateCurrLevelM
-  where
-    updateCurrLevelM :: [(ScopeLevel, Val)] -> [(ScopeLevel, Val)]
-    updateCurrLevelM (lvl:lvls) = mapSnd f lvl : lvls
+updateVarM ident f = alterLevelsM ident updateCurrLevelM where
+  updateCurrLevelM :: [(ScopeLevel, Val)] -> [(ScopeLevel, Val)]
+  updateCurrLevelM (lvl:lvls) = mapSnd f lvl : lvls
 
 alterLevelsM :: Ident -> ([(ScopeLevel, Val)] -> [(ScopeLevel, Val)]) -> (StmtsInterpreter a) ()
-alterLevelsM ident modifier = modify $ mapSnd $ Map.alter modifier' ident
-  where
-    modifier' :: Maybe [(ScopeLevel, Val)] -> Maybe [(ScopeLevel, Val)]
-    modifier' list = return $ modifier $ fromMaybe [] list
+alterLevelsM ident modifier = modify $ mapSnd $ Map.alter modifier' ident where
+  modifier' :: Maybe [(ScopeLevel, Val)] -> Maybe [(ScopeLevel, Val)]
+  modifier' list = return $ modifier $ fromMaybe [] list
 
 condElseM :: Expr' a -> Block' a -> Block' a -> (StmtsInterpreter a) (Maybe Val)
 condElseM e b1 b2 = do
@@ -108,7 +123,6 @@ condM e b = do
     then execBlockM b
     else return Nothing
 
--- FIXME handle a return inside a while
 whileM :: Expr' a -> Block' a -> (StmtsInterpreter a) (Maybe Val)
 whileM e b = do
   v <- evalExprM e
@@ -122,4 +136,4 @@ whileM e b = do
 evalExprM :: Expr' a -> (StmtsInterpreter a) Val
 evalExprM e = do
   varEnv <- get
-  lift $ evalExpr e varEnv
+  lift $ Evaluator.evalExprM e varEnv

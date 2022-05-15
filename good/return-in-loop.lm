@@ -1,0 +1,20 @@
+void once() {
+  while (true) {
+    print("once");
+    return;
+  }
+}
+void twice() {
+  int i = 1;
+  while (true) {
+    print("twice");
+    if (i == 2) {
+      return;
+    }
+    i++;
+  }
+}
+void main () {
+  once();
+  twice();
+}

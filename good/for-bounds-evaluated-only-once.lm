@@ -1,0 +1,12 @@
+void main () {
+  int top = 2;
+  print("You can count up:");
+  for (i from -2 to top) {
+    top = -2; // this should have no effect on the for loop
+    print(i);
+  }
+  print("And down:");
+  for (i from 2 to top) {
+    print(i);
+  }
+}

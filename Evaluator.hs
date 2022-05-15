@@ -9,34 +9,34 @@ import Globals
 import Functions (runFnM)
 import AbsLatteMalinowe
 
-evalExpr :: Expr' a -> VarEnv -> ReaderT (FnEnv a) OutputWriter Val
-evalExpr e varEnv = runReaderT (eval e) varEnv
+evalExprM :: Expr' a -> VarEnv -> ReaderT (FnEnv a) OutputWriter Val
+evalExprM e varEnv = runReaderT (evalM e) varEnv
 
-eval :: Expr' a -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
-eval e = case e of
+evalM :: Expr' a -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
+evalM e = case e of
   LitInt _ n -> return $ VInt n
   LitTrue _ -> return $ VBool True
   LitFalse _ -> return $ VBool False
   LitString _ s -> return $ VStr s
-  Var _ ident -> var ident 
+  Var _ ident -> varM ident 
   App _ ident es -> do
-    args <- mapM eval es
-    lift $ app ident args
-  Neg _ e -> neg <$> (eval e)
-  Not _ e -> not' <$> (eval e)
-  And _ e1 e2 -> and' <$> (eval e1) <*> (eval e2)
-  Or  _ e1 e2 -> or' <$> (eval e1) <*> (eval e2)
-  Rel _ e1 op e2 -> rel op <$> (eval e1) <*> (eval e2)
-  Mul _ e1 op e2 -> mul op <$> (eval e1) <*> (eval e2)
-  Add _ e1 op e2 -> add op <$> (eval e1) <*> (eval e2)
+    args <- mapM evalM es
+    lift $ appM ident args
+  Neg _ e -> neg <$> (evalM e)
+  Not _ e -> not' <$> (evalM e)
+  And _ e1 e2 -> and' <$> (evalM e1) <*> (evalM e2)
+  Or  _ e1 e2 -> or' <$> (evalM e1) <*> (evalM e2)
+  Rel _ e1 op e2 -> rel op <$> (evalM e1) <*> (evalM e2)
+  Mul _ e1 op e2 -> mul op <$> (evalM e1) <*> (evalM e2)
+  Add _ e1 op e2 -> add op <$> (evalM e1) <*> (evalM e2)
 
-var :: Ident -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
-var ident = do
-  varlvls <- asks $ (Map.lookup ident) . snd
-  return $ snd $ head $ fromJust varlvls
+varM :: Ident -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
+varM ident = do
+  lvls <- asks $ (Map.lookup ident) . snd
+  return $ snd $ head $ fromJust lvls
 
-app :: Ident -> [Val] -> ReaderT (FnEnv a) OutputWriter Val
-app ident args = do
+appM :: Ident -> [Val] -> ReaderT (FnEnv a) OutputWriter Val
+appM ident args = do
   maybeFn <- asks $ Map.lookup ident
   runFnM (fromJust maybeFn) args
 
