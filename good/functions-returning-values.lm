@@ -1,0 +1,22 @@
+string hello(string who) {
+  return "Hello, " + who + "!";
+  print("This should not be printed.");
+}
+int sum(int a, int b) {
+  //{
+    a = a + b;
+  //};
+  return a;
+  a = 0;
+}
+void main() {
+  print(hello("Marek"));
+  print(sum(7, 3));
+  print(neg(false));
+}
+bool neg(bool b) {
+  //{
+  //  return !b;
+  //};
+  return b;
+}
