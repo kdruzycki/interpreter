@@ -10,16 +10,13 @@ ALEX_OPTS  = --ghc
 
 # List of goals not corresponding to file names.
 
-.PHONY : all clean distclean
+.PHONY : all clean
 
 # Default goal.
 
 all : Main
 
 # Rules for building the parser.
-
-AbsLatteMalinowe.hs LexLatteMalinowe.x ParLatteMalinowe.y PrintLatteMalinowe.hs TestLatteMalinowe.hs : LatteMalinowe.cf
-	bnfc --haskell --functor LatteMalinowe.cf
 
 %.hs : %.y
 	${HAPPY} ${HAPPY_OPTS} $<
