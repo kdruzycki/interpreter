@@ -65,7 +65,7 @@ forLoopM ident e1 e2 b = do
     forLoopM :: ScopeLevel -> Ident -> Integer -> Integer -> Bool -> Block' a -> (StmtsInterpreter a) (Maybe Val)
   --   -- trzeba w każdej iteracji zapisywać na nowo, bo blok je kasuje :P
     forLoopM lvl i curr end asc block = do
-      if (asc && curr <= end || not asc && curr >= end)
+      if (asc && curr < end || not asc && curr > end)
         then do
           alterLevelsM ident $ (:) (lvl + 1, VInt curr)
           ret <- execBlockM block

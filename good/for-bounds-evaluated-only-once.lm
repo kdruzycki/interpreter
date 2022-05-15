@@ -1,12 +1,17 @@
 void main () {
-  int top = 2;
+  int top = 3;
   print("You can count up:");
   for (i from -2 to top) {
-    top = -2; // this should have no effect on the current for loop
+    // Below stmt should have no effect on the current for loop:
+    top = -3;
     print(i);
   }
   print("And down:");
   for (i from 2 to top) {
     print(i);
+  }
+  for (i from 0 to 0) {
+    // The "to" bound is exclusive (so this will not be executed):
+    print("This should not be printed.");
   }
 }
