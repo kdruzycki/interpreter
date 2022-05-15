@@ -15,7 +15,7 @@ import LexLatteMalinowe   ( Token, mkPosToken )
 import ParLatteMalinowe   ( pProgram, myLexer )
 import PrintLatteMalinowe ( Print, printTree )
 import Globals
-import Functions -- ( interpret )
+import Functions ( execProgram )
 
 type Err        = Either String
 type ParseFun a = [Token] -> Err a
@@ -37,12 +37,11 @@ run v s =
       putStrLn err
       exitFailure
     Right tree -> do
-      putStrLn "\nParse Successful!"
-      showTree v tree
-      -- typeCheck tree
+      -- putStrLn "\nParse Successful!"
+      -- showTree v tree
+      -- typeCheck tree TODO
       let program = execProgram tree
       putStr $ snd program "\n"
-      -- putStrLn $ showString "Program resulted with: " $ show $ fst program
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
