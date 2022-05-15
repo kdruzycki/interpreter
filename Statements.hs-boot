@@ -4,4 +4,4 @@ import Globals
 import Control.Monad.Reader
 import AbsLatteMalinowe
 
-execBlock :: Block' a -> VarEnv -> ReaderT (FnEnv a) (OutputWriter) ()
+execFnBlock :: Block' a -> [(Ident, Val)] -> ReaderT (FnEnv a) (OutputWriter) ()
