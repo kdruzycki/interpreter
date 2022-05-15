@@ -19,7 +19,8 @@ type Result = Err Val
 type FnSgn a = ([Ident], Block' a)
 type FnEnv a = Map.Map Ident (FnSgn a)
 
-type VarEnv = Map.Map Ident Val
+type ScopeLevel = Int
+type VarEnv = (ScopeLevel, Map.Map Ident [(ScopeLevel, Val)])
 type OutputWriter = Writer ShowS
 
 failure :: Show a => a -> Result

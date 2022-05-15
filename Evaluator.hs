@@ -30,7 +30,11 @@ eval e = case e of
   Add _ e1 op e2 -> add op <$> (eval e1) <*> (eval e2)
 
 var :: Ident -> ReaderT VarEnv (ReaderT (FnEnv a) OutputWriter) Val
-var ident = asks $ Map.findWithDefault (VBool False) ident
+var ident = do
+  varlevels <- asks $ (Map.lookup ident) . snd
+  case varlevels of
+    Just lvls -> return $ snd $ head $ lvls
+    Nothing -> return $ VBool False
 
 app :: Ident -> [Val] -> ReaderT (FnEnv a) OutputWriter Val
 app ident args = do

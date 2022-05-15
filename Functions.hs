@@ -10,10 +10,27 @@ import Control.Monad.Trans.Writer.Strict
 import Utils
 import Globals
 import AbsLatteMalinowe
-import {-# SOURCE #-} Statements (execBlock)
+import {-# SOURCE #-} Statements (execFnBlock)
 
 -- TODO
--- 3. Zrobić reader fnEnv w Ewaluatorze i w ten sposób wykonać tam execFnM
+-- pętla for bez read only
+-- przesłanianie
+-- oto pomysł na scoping:
+--   StateT jest typu (<poziom_zagnieżdżenia>::Int, Mapa<Ident, [(<poziom_zagn>::Int, Val)]>)
+--   jak wchodzimy do bloku, to zwiększamy poziom zagnieżdżenia
+--   jak koniec bloku, to ze wszystkich map.values usuwamy head wtw poziom zagnieżdżenia head'a wynosi poziom zagnieżdżenia bloku
+--     oraz na koniec przywracamy poziom zagnieżdżenia sprzed bloku, czyli zmniejszamy o 1
+--     *ewentualnie* można nie usuwać od razu, tylko potem sprawdzać, czy aktualne zagnieżdżenie nie jest mniejsze niż head i wtedy usunąć
+
+-- read only bedzie w typeCheckerze
+-- funkcje zwracające wartość
+-- sprawdzanie, czy coś jest zmienną, czy funkcją też
+-- zgodność typów argumentów funkcji też
+-- redeklaracja zmiennych też (w obrębie jednego bloku)
+-- i redeklaracja zmiennej read-only
+-- deklarację funkcji można przesłonić deklaracją zmiennej (sic!)
+-- w szczególności jeśli deklaracja funkcji jest przesłonięta deklaracją zmiennej, to nie można wykonać App nazwa_funkcji
+-- czy można przesłaniać argumenty funkcji??
 
 programOutput :: Program' a -> Either String String
 programOutput p = return $ (execWriter $ execProgram p) "\n"
@@ -27,8 +44,7 @@ execProgramM = do
   mapM_ (\fnSgn -> runFnM fnSgn []) main
 
 runFnM :: FnSgn a -> [Val] -> ReaderT (FnEnv a) OutputWriter ()
-runFnM (argIdents, b) argVals = execBlock b varEnv
-  where varEnv = Map.fromList $ zip argIdents argVals
+runFnM (argIdents, b) argVals = execFnBlock b $ zip argIdents argVals
 
 createFnEnv :: Program' a -> FnEnv a
 createFnEnv (Program _ fnDefs) = Map.fromList $ map fnEnvEntry fnDefs
