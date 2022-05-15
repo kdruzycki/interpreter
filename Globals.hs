@@ -10,10 +10,8 @@ data Val
   | VStr  String
   | VBool Bool
   | VVoid
-  deriving (Show)
-
-type Err = Either String
-type Result = Err Val
+  | VBrk | VCnt
+  deriving (Show, Eq)
 
 -- pamietamy tylko identyfikatory, nie pamiętamy typów, bo typechecker
 type FnSgn a = ([Ident], Block' a)
@@ -22,9 +20,6 @@ type FnEnv a = Map.Map Ident (FnSgn a)
 type ScopeLevel = Int
 type VarEnv = (ScopeLevel, Map.Map Ident [(ScopeLevel, Val)])
 type OutputWriter = Writer ShowS
-
-failure :: Show a => a -> Result
-failure x = Left $ "Undefined case: " ++ show x
 
 defaultVal :: Type' a -> Val
 defaultVal t = case t of

@@ -42,6 +42,8 @@ execStmtM s = case s of
   For _ ident e1 e2 block -> forLoopM ident e1 e2 block
   Ret _ expr -> evalExprM expr >>= (\v -> return $ return v)
   VRet _ -> return $ return VVoid
+  Break _ -> return $ return VBrk
+  Continue _ -> return $ return VCnt
   _ -> do
     case s of
       Empty _ -> return ()
@@ -51,9 +53,6 @@ execStmtM s = case s of
       Ass _ ident expr -> assM ident expr
       Incr _ ident -> updateVarM ident (\v -> VInt $ (fromVInt v) + 1)
       Decr _ ident -> updateVarM ident (\v -> VInt $ (fromVInt v) - 1)
-      -- Break _ -> failure x
-      -- AbsLatteMalinowe.Continue _ -> failure x
-      _ -> return ()
     return Nothing
 
 forLoopM :: Ident -> Expr' a -> Expr' a -> Block' a -> (StmtsInterpreter a) (Maybe Val)
@@ -63,18 +62,16 @@ forLoopM ident e1 e2 b = do
   scopelvl <- gets $ fst
   forLoopM scopelvl ident v1 v2 (v1 <= v2) b where
     forLoopM :: ScopeLevel -> Ident -> Integer -> Integer -> Bool -> Block' a -> (StmtsInterpreter a) (Maybe Val)
-  --   -- trzeba w każdej iteracji zapisywać na nowo, bo blok je kasuje :P
     forLoopM lvl i curr end asc block = do
       if (asc && curr < end || not asc && curr > end)
         then do
           alterLevelsM ident $ (:) (lvl + 1, VInt curr)
           ret <- execBlockM block
-          if (isJust ret)
-            then (return ret)
+          if (isJust ret && fromJust ret /= VCnt)
+            then if (fromJust ret == VBrk) then (return Nothing) else (return ret)
             else forLoopM lvl i (if asc then curr + 1 else curr - 1) end asc block
         else return Nothing
 
--- TODO użycie listen
 printM :: Expr' a -> (StmtsInterpreter a) ()
 printM e = do
   v <- evalExprM e
@@ -129,7 +126,9 @@ whileM e b = do
   if (fromVBool v)
     then do
       ret <- execBlockM b
-      if (isJust ret) then (return ret) else (whileM e b)
+      if (isJust ret && fromJust ret /= VCnt)
+        then if (fromJust ret == VBrk) then (return Nothing) else (return ret)
+        else (whileM e b)
     else
       return Nothing
 

@@ -17,7 +17,7 @@ import PrintLatteMalinowe ( Print, printTree )
 import Globals
 import Functions -- ( interpret )
 
--- type Err        = Either String
+type Err        = Either String
 type ParseFun a = [Token] -> Err a
 type Verbosity  = Int
 

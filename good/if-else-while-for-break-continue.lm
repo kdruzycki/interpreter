@@ -12,7 +12,7 @@ void main () {
   }
 
   for (i from 1 to 10) {
-    if (i % 2) {
+    if (i % 2 == 1) {
       if (true) {
         continue;
       }
