@@ -3,7 +3,7 @@ module Statements where
 import qualified Data.Map as Map
 import Control.Monad.Reader
 import Control.Monad.State.Strict
-import Control.Monad.Trans.Writer.Strict
+import Control.Monad.Trans.Writer.Lazy
 
 import Utils
 import Globals
@@ -19,14 +19,9 @@ execFnBlock b args = evalStateT (execBlockM b) fnEnv
 execBlockM :: Block' a -> (StmtsInterpreter a) ()
 execBlockM (Block _ stmts) = do
   modify $ chgFst (+1)
-  env <- get
-  lift $ lift $ tell $ showString "Wchodzę do bloku: " . (shows env)
   processSeq execStmtM stmts
-  -- TODO usuń wszystkie zmienne z tego bloku
   lvl <- gets $ fst
-  env <- get
   modify $ chgFst (+(-1))
-  lift $ lift $ tell $ showString "Wychodzę z bloku: " . (shows env)
   modify $ chgSnd $ Map.map droplLocal
     where
     droplLocal ((lvl, _):lvls) = lvls

@@ -1,0 +1,6 @@
+void main () {
+  // This program obviously won't terminate
+  //   but it should produce output nonetheless
+  print("hello");
+  main();
+}

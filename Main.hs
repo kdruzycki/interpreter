@@ -9,6 +9,7 @@ import Data.Either ( isLeft, fromLeft )
 import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when, return )
+import Control.Monad.Writer.Lazy
 
 import LexLatteMalinowe   ( Token, mkPosToken )
 import ParLatteMalinowe   ( pProgram, myLexer )
@@ -39,9 +40,9 @@ run v s =
       putStrLn "\nParse Successful!"
       showTree v tree
       -- typeCheck tree
-      case (programOutput tree) of
-        Left err -> putStrLn $ showString "Runtime error: " err
-        Right out -> putStr $ out
+      let program = execProgram tree
+      putStr $ snd program "\n"
+      putStrLn $ showString "Program resulted with: " $ show $ fst program
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]

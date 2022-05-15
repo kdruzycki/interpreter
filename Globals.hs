@@ -1,7 +1,7 @@
 module Globals where
 
 import qualified Data.Map as Map
-import Control.Monad.Trans.Writer.Strict
+import Control.Monad.Trans.Writer.Lazy
 
 import AbsLatteMalinowe
 
