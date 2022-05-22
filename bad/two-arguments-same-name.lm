@@ -1,0 +1,5 @@
+void f() {}
+void g(int a, string a) {}
+void main() {
+  print("lol");
+}

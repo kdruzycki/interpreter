@@ -1,0 +1,9 @@
+int g () {
+  return 0;
+}
+string g (int i) {
+  return "";
+}
+void main () {
+
+}

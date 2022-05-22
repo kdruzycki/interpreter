@@ -15,6 +15,7 @@ import LexLatteMalinowe   ( Token, mkPosToken )
 import ParLatteMalinowe   ( pProgram, myLexer )
 import PrintLatteMalinowe ( Print, printTree )
 import Globals
+import TypeChecker ( typeCheck )
 import Functions ( execProgram )
 
 type Err        = Either String
@@ -39,9 +40,11 @@ run v s =
     Right tree -> do
       -- putStrLn "\nParse Successful!"
       -- showTree v tree
-      -- typeCheck tree TODO
-      let program = execProgram tree
-      putStr $ snd program "\n"
+      case typeCheck tree of
+        Left err -> putStrLn $ "Type-checking error: " ++ err
+        _ -> do
+          let program = execProgram tree
+          putStr $ snd program "\n"
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]

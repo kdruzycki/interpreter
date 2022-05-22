@@ -1,0 +1,19 @@
+int dec5(int v) {
+  if (v - 5 < 0) {
+    return v;
+  } else {
+    v = v - 5;
+    return dec7(v);
+  }
+}
+int dec7(int v) {
+  if (v - 7 < 0) {
+    return v;
+  } else {
+    v = v - 7;
+    return dec5(v);
+  }
+}
+void main() {
+  print(dec5(236));
+}
