@@ -1,0 +1,4 @@
+void n () {}
+void main () {
+  n + 5;
+}

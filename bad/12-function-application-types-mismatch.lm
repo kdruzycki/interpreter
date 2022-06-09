@@ -1,0 +1,4 @@
+void foo (int a, string b) {}
+void main () {
+  foo(1,2);
+}
